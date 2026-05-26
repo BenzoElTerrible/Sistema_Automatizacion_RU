@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Variables de entorno
+.env
+
+# VS Code
+.vscode/
+
+# Archivos temporales
+*.log
+
+# Media local
+media/
+
+# PostgreSQL volumes
+postgres_data/
+
+# Mac/Linux basura
+.DS_Store
