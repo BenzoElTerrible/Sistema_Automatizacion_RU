@@ -43,6 +43,11 @@ class ResolucionUniversitaria(models.Model):
     def __str__(self):
         return self.nombre_generado
 
+    def delete(self, *args, **kwargs):
+        if self.archivo_pdf:
+            self.archivo_pdf.delete(save=False)
+            super().delete(*args, **kwargs)
+
     class Meta:
         verbose_name = "Resolución Universitaria"
         verbose_name_plural = "Resoluciones Universitarias"

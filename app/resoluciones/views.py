@@ -42,3 +42,18 @@ class ResolucionUniversitariaDetailView(APIView):
 
         serializer = ResolucionUniversitariaSerializer(resolucion)
         return Response(serializer.data)
+    
+    def delete(self, request, pk):
+        try:
+            resolucion = ResolucionUniversitaria.objects.get(pk=pk)
+        except ResolucionUniversitaria.DoesNotExist:
+            return Response(
+                {"error": "La resolucion que intenta eliminar no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        resolucion.delete()
+        return Response(
+            {"message": "Resolución y archivo PDF eliminados con exito."},
+            status=status.HTTP_204_NO_CONTENT
+        )
