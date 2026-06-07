@@ -1,8 +1,8 @@
 [
-  {"model": "resoluciones.tiporu", "pk": 1, "fields": {"nombre": "Nombramiento de Director"}},
-  {"model": "resoluciones.tiporu", "pk": 2, "fields": {"nombre": "Nombramiento de Comité Académico"}},
-  {"model": "resoluciones.tiporu", "pk": 3, "fields": {"nombre": "Creación de Programa"}},
-  {"model": "resoluciones.tiporu", "pk": 4, "fields": {"nombre": "Modificación de Programa"}},
-  {"model": "resoluciones.tiporu", "pk": 5, "fields": {"nombre": "Ingreso de Estudiantes"}},
-  {"model": "resoluciones.tiporu", "pk": 6, "fields": {"nombre": "Otro"}}
+  {"model": "resoluciones.tiporu", "pk": 1, "fields": {"nombre": "Nombramiento de Director", "sigla": "ND"}},
+  {"model": "resoluciones.tiporu", "pk": 2, "fields": {"nombre": "Nombramiento de Comité Académico", "sigla": "NCA"}},
+  {"model": "resoluciones.tiporu", "pk": 3, "fields": {"nombre": "Creación de Programa", "sigla": "CP"}},
+  {"model": "resoluciones.tiporu", "pk": 4, "fields": {"nombre": "Modificación de Programa", "sigla": "MP"}},
+  {"model": "resoluciones.tiporu", "pk": 5, "fields": {"nombre": "Ingreso de Estudiantes", "sigla": "IE"}},
+  {"model": "resoluciones.tiporu", "pk": 6, "fields": {"nombre": "Otro", "sigla": "OTRO"}}
 ]
