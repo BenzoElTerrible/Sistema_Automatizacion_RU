@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Resoluciones universitarias</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+<!-- Estilo y parametros de CSS -->
+<style>
+body {
+	color: #566787;
+	background: #f5f5f5;
+	font-family: 'Varela Round', sans-serif;
+	font-size: 13px;
+}
+.table-responsive {
+    margin: 30px 0;
+}
+.table-wrapper {
+	background: #fff;
+	padding: 20px 25px;
+	border-radius: 3px;
+	min-width: 1000px;
+	box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+.table-title {        
+	padding-bottom: 15px;
+	background: #435d7d;
+	color: #fff;
+	padding: 16px 30px;
+	min-width: 100%;
+	margin: -20px -25px 10px;
+	border-radius: 3px 3px 0 0;
+}
+.table-title h2 {
+	margin: 5px 0 0;
+	font-size: 24px;
+}
+.table-title .btn-group {
+	float: right;
+}
+.table-title .btn {
+	color: #fff;
+	float: right;
+	font-size: 13px;
+	border: none;
+	min-width: 50px;
+	border-radius: 2px;
+	border: none;
+	outline: none !important;
+	margin-left: 10px;
+}
+.table-title .btn i {
+	float: left;
+	font-size: 21px;
+	margin-right: 5px;
+}
+.table-title .btn span {
+	float: left;
+	margin-top: 2px;
+}
+table.table tr th, table.table tr td {
+	border-color: #e9e9e9;
+	padding: 12px 15px;
+	vertical-align: middle;
+}
+table.table tr th:first-child {
+	width: 60px;
+}
+table.table tr th:last-child {
+	width: 100px;
+}
+table.table-striped tbody tr:nth-of-type(odd) {
+	background-color: #fcfcfc;
+}
+table.table-striped.table-hover tbody tr:hover {
+	background: #f5f5f5;
+}
+table.table th i {
+	font-size: 13px;
+	margin: 0 5px;
+	cursor: pointer;
+}	
+table.table td:last-child i {
+	opacity: 0.9;
+	font-size: 22px;
+	margin: 0 5px;
+}
+table.table td a {
+	font-weight: bold;
+	color: #566787;
+	display: inline-block;
+	text-decoration: none;
+	outline: none !important;
+}
+table.table td {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;  
+    word-break: break-word;
+}
+table.table td a:hover {
+	color: #2196F3;
+}
+table.table td a.edit {
+	color: #FFC107;
+}
+table.table td a.delete {
+	color: #F44336;
+}
+table.table td i {
+	font-size: 19px;
+}
+table.table .avatar {
+	border-radius: 50%;
+	vertical-align: middle;
+	margin-right: 10px;
+}
+.pagination {
+	float: right;
+	margin: 0 0 5px;
+}
+.pagination li a {
+	border: none;
+	font-size: 13px;
+	min-width: 30px;
+	min-height: 30px;
+	color: #999;
+	margin: 0 2px;
+	line-height: 30px;
+	border-radius: 2px !important;
+	text-align: center;
+	padding: 0 6px;
+}
+.pagination li a:hover {
+	color: #666;
+}	
+.pagination li.active a, .pagination li.active a.page-link {
+	background: #03A9F4;
+}
+.pagination li.active a:hover {        
+	background: #0397d6;
+}
+.pagination li.disabled i {
+	color: #ccc;
+}
+.pagination li i {
+	font-size: 16px;
+	padding-top: 6px
+}
+.hint-text {
+	float: left;
+	margin-top: 10px;
+	font-size: 13px;
+}    
+/* Custom checkbox */
+.custom-checkbox {
+	position: relative;
+}
+.custom-checkbox input[type="checkbox"] {    
+	opacity: 0;
+	position: absolute;
+	margin: 5px 0 0 3px;
+	z-index: 9;
+}
+.custom-checkbox label:before{
+	width: 18px;
+	height: 18px;
+}
+.custom-checkbox label:before {
+	content: '';
+	margin-right: 10px;
+	display: inline-block;
+	vertical-align: text-top;
+	background: white;
+	border: 1px solid #bbb;
+	border-radius: 2px;
+	box-sizing: border-box;
+	z-index: 2;
+}
+.custom-checkbox input[type="checkbox"]:checked + label:after {
+	content: '';
+	position: absolute;
+	left: 6px;
+	top: 3px;
+	width: 6px;
+	height: 11px;
+	border: solid #000;
+	border-width: 0 3px 3px 0;
+	transform: inherit;
+	z-index: 3;
+	transform: rotateZ(45deg);
+}
+.custom-checkbox input[type="checkbox"]:checked + label:before {
+	border-color: #03A9F4;
+	background: #03A9F4;
+}
+.custom-checkbox input[type="checkbox"]:checked + label:after {
+	border-color: #fff;
+}
+.custom-checkbox input[type="checkbox"]:disabled + label:before {
+	color: #b8b8b8;
+	cursor: auto;
+	box-shadow: none;
+	background: #ddd;
+}
+/* Modal styles */
+.modal .modal-dialog {
+	max-width: 400px;
+}
+.modal .modal-header, .modal .modal-body, .modal .modal-footer {
+	padding: 20px 30px;
+}
+.modal .modal-content {
+	border-radius: 3px;
+	font-size: 14px;
+}
+.modal .modal-footer {
+	background: #ecf0f1;
+	border-radius: 0 0 3px 3px;
+}
+.modal .modal-title {
+	display: inline-block;
+}
+.modal .form-control {
+	border-radius: 2px;
+	box-shadow: none;
+	border-color: #dddddd;
+}
+.modal textarea.form-control {
+	resize: vertical;
+}
+.modal .btn {
+	border-radius: 2px;
+	min-width: 100px;
+}	
+.modal form label {
+	font-weight: normal;
+}	
+</style>
+
+<!-- Script para interacuar con chekbox -->
+<script>
+$(document).ready(function(){
+	// Activate tooltip
+	$('[data-toggle="tooltip"]').tooltip();
+	
+	// Select/Deselect checkboxes
+	var checkbox = $('table tbody input[type="checkbox"]');
+	$("#selectAll").click(function(){
+		if(this.checked){
+			checkbox.each(function(){
+				this.checked = true;                        
+			});
+		} else{
+			checkbox.each(function(){
+				this.checked = false;                        
+			});
+		} 
+	});
+	checkbox.click(function(){
+		if(!this.checked){
+			$("#selectAll").prop("checked", false);
+		}
+	});
+});
+</script>
+
+</head>
+<body>
+
+<div class="container-xl">
+	<div class="table-responsive">
+		<div class="table-wrapper">
+			<div class="table-title">
+				<div class="row">
+					<div class="col-sm-6">
+						<h2>Resoluciones universitarias</h2>
+					</div>
+					<div class="col-sm-6">
+						<a href="#addRUModal" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i> <span>Agregar nueva RU</span></a>
+						<a href="#deleteRUModal" id="btnBulkDelete" class="btn btn-danger" data-toggle="modal">
+                            <i class="material-icons">&#xE15C;</i> <span>Eliminar</span>
+                        </a>						
+					</div>
+				</div>
+			</div>
+			<table class="table table-striped table-hover">
+				<thead>
+					<tr>
+						<th>
+							<span class="custom-checkbox">
+								<input type="checkbox" id="selectAll">
+								<label for="selectAll"></label>
+							</span>
+						</th>
+						<th>Nombre (generado)</th>
+						<th>Tipo</th>
+						<th>Carrera asociada</th>
+                        <th>Editar</th>
+                        <th>Eliminar</th>
+
+					</tr>
+				</thead>
+                <tbody id="tabla-ru-body">
+                    {% for ru in resoluciones %}
+                    <tr>
+                        <td>
+                            <span class="custom-checkbox">
+                                <input type="checkbox" id="checkbox{{ ru.id }}" name="options[]" value="{{ ru.id }}">
+                                <label for="checkbox{{ ru.id }}"></label>
+                            </span>
+                        </td>
+                        
+                        <td>{{ ru.nombre_generado }}</td>
+                        <td>{{ ru.tipo.nombre }}</td>
+                        <td>{{ ru.carrera_asociada.nombre }}</td>
+                        
+                        <td>
+                            <a href="#" class="edit" data-id="{{ ru.id }}">
+                                <i class="material-icons" title="Editar">&#xE254;</i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" class="delete" data-id="{{ ru.id }}" data-nombre="{{ ru.nombre_generado }}">
+                                <i class="material-icons" title="Eliminar">&#xE872;</i>
+                            </a>
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No hay resoluciones registradas an.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+			</table>
+            <div class="clearfix">
+                <div class="hint-text">
+                    Mostrando <b>{{ resoluciones.count }}</b> de <b>{{ resoluciones.paginator.count }}</b> resultados
+                </div>
+                <ul class="pagination">
+                    {% if resoluciones.has_previous %}
+                        <li class="page-item"><a href="?page={{ resoluciones.previous_page_number }}" class="page-link">Anterior</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a href="#" class="page-link">Anterior</a></li>
+                    {% endif %}
+
+                    {% for num in resoluciones.paginator.page_range %}
+                        <li class="page-item {% if resoluciones.number == num %}active{% endif %}">
+                            <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+
+                    {% if resoluciones.has_next %}
+                        <li class="page-item"><a href="?page={{ resoluciones.next_page_number }}" class="page-link">Siguiente</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a href="#" class="page-link">Siguiente</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+		</div>
+	</div>        
+</div>
+
+<!-- Creacion de RU - Modal/Formulario -->
+<div id="addRUModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formAgregarRU" enctype="multipart/form-data">
+                {% csrf_token %} <div class="modal-header">                      
+                    <h4 class="modal-title">Agregar nueva RU</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">                    
+                    
+                    <div class="form-group">
+                        <label>Año</label>
+                        <input type="number" name="anio" class="form-control" min="1950" max="2030" required onkeydown="return ['Backspace','Delete','ArrowLeft','ArrowRight','Tab'].includes(event.key) || (event.key >= '0' && event.key <= '9')">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Numero RU</label>
+                        <input type="number" name="numero_ru" class="form-control" min="1" max="99999" required onkeydown="return ['Backspace','Delete','ArrowLeft','ArrowRight','Tab'].includes(event.key) || (event.key >= '0' && event.key <= '9')">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Seccion de origen</label>
+                        <select name="seccion_origen" class="form-control" required>
+                            <option value="">Seleccione una seccion...</option>
+                            <option value="Rectoria">Rectoria</option>
+                            <option value="Postgrado">Postgrado</option>
+                            <option value="Finanzas">Finanzas</option>
+                            <option value="Otra">Otra</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select name="tipo" class="form-control" required>
+                            <option value="">Seleccione un tipo...</option>
+                            {% for t in tipos %}
+                                <option value="{{ t.id }}">{{ t.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>                  
+
+                    <div class="form-group">
+                        <label>Carrera Asociada</label>
+                        <select name="carrera_asociada" class="form-control" required>
+                            <option value="">Seleccione una carrera...</option>
+                            {% for c in carreras %}
+                                <option value="{{ c.id }}">{{ c.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Archivo PDF</label>
+                        <input type="file" name="archivo_pdf" accept=".pdf" class="form-control-file" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancelar">
+                    <input type="submit" class="btn btn-success" value="Guardar RU">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Editar RU - Modal/Formulario -->
+<div id="editRUModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formEditarRU" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="editId">
+                <div class="modal-header">
+                    <h4 class="modal-title">Editar RU</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Año</label>
+                        <input type="number" id="editAnio" name="anio" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Numero RU</label>
+                        <input type="number" id="editNumeroRu" name="numero_ru" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Seccion de origen</label>
+                        <select id="editSeccion" name="seccion_origen" class="form-control" required>
+                            <option value="Rectoria">Rectoria</option>
+                            <option value="Postgrado">Postgrado</option>
+                            <option value="Finanzas">Finanzas</option>
+                            <option value="Otra">Otra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="editTipo" name="tipo" class="form-control" required>
+                            {% for t in tipos %}
+                                <option value="{{ t.id }}">{{ t.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Carrera Asociada</label>
+                        <select id="editCarrera" name="carrera_asociada" class="form-control" required>
+                            {% for c in carreras %}
+                                <option value="{{ c.id }}">{{ c.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Archivo PDF (solo si quieres reemplazarlo)</label>
+                        <input type="file" name="archivo_pdf" accept=".pdf" class="form-control-file">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancelar">
+                    <input type="submit" class="btn btn-warning" value="Guardar cambios">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ELimiacion de RU superior (checkbox)- Modal -->
+<div id="deleteRUModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formEliminarRU">
+                {% csrf_token %}
+                <div class="modal-header">                      
+                    <h4 class="modal-title">Eliminar Resolucion</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">                    
+                    <p>¿Esta seguro/a de eliminar esta RU?</p>
+                    <p class="text-warning"><small>Esta accion no puede revertirse.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancelar">
+                    <input type="submit" class="btn btn-danger" value="Eliminar">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Script para crear en formulario -->
+<script>
+document.getElementById('formAgregarRU').addEventListener('submit', function(e) {
+    e.preventDefault(); // Evita que la página se recargue a la mala
+
+    // Empaquetamos todos los campos y el archivo (igual que los -F del curl)
+    let formData = new FormData(this);
+
+    // Hacemos la petición POST a tu URL de creación (según tu urls.py es /ru/)
+    fetch('/ru/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            // Le pasamos el token de seguridad para que Django no rechace la petición
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Si todo sale bien, recargamos la página para ver la tabla actualizada
+            window.location.reload();
+        } else {
+            return response.json().then(err => {
+                console.error(err);
+                const mensaje = err.archivo_pdf ? err.archivo_pdf[0] : "Hubo un error al guardar. Revisa la consola.";
+                alert(mensaje);
+            });
+        }
+    })
+    .catch(error => {
+        console.error("Error de red:", error);
+        alert("Error de conexión con el servidor.");
+    });
+});
+</script>
+
+<!-- Script para eliminar tanto en checkbos como en el icono de la fila -->
+<script>
+// ── 1. ELIMINAR INDIVIDUAL (ícono basura) ──────────────────────────
+let idAEliminar = null;
+let nombreAEliminar = null; 
+
+// Cuando se hace click en el ícono basura, guarda el id y abre el modal
+document.querySelectorAll('.delete').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        idAEliminar = this.dataset.id;
+        nombreAEliminar = this.dataset.nombre;  
+        $('#deleteRUModal').modal('show');
+    });
+});
+
+// ── 2. ELIMINAR MASIVO (checkboxes) ───────────────────────────────
+document.getElementById('btnBulkDelete').addEventListener('click', function() {
+    idAEliminar = null;
+    nombreAEliminar = null;  
+    $('#deleteRUModal').modal('show');
+});
+
+// ── 3. CONFIRMAR ELIMINACIÓN (el botón del modal) ──────────────────
+document.getElementById('formEliminarRU').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Arma la lista de ids a eliminar
+    let ids = [];
+
+    if (idAEliminar) {
+        // Vino del ícono basura → solo uno
+        ids = [idAEliminar];
+    } else {
+        // Vino del botón Eliminar → todos los checkboxes marcados
+        document.querySelectorAll('tbody input[type="checkbox"]:checked').forEach(function(cb) {
+            ids.push(cb.value);
+        });
+    }
+
+    if (ids.length === 0) {
+        alert("Selecciona al menos una RU para eliminar.");
+        $('#deleteRUModal').modal('hide');
+        return;
+    }
+
+    // Elimina uno por uno usando tu endpoint DELETE /ru/<pk>/
+    let promesas = ids.map(function(id) {
+        return fetch('/ru/' + id + '/', {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+    });
+
+    Promise.all(promesas).then(function() {
+        if (nombreAEliminar) {
+            alert('Se ha eliminado: ' + nombreAEliminar);
+        } else {
+            alert('Resoluciones eliminadas correctamente.');
+        }
+        window.location.reload();
+    });
+});
+</script>
+
+<!-- Script editar-->
+<script>
+     // Al hacer click en editar, trae los datos y rellena el modal
+    document.querySelectorAll('.edit').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+
+            fetch('/ru/' + id + '/')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('editId').value = id;
+                    document.getElementById('editAnio').value = data.anio;
+                    document.getElementById('editNumeroRu').value = data.numero_ru;
+                    document.getElementById('editSeccion').value = data.seccion_origen;
+                    document.getElementById('editTipo').value = data.tipo;
+                    document.getElementById('editCarrera').value = data.carrera_asociada;
+                    $('#editRUModal').modal('show');
+                });
+        });
+    });
+
+    // Guardar cambios
+    document.getElementById('formEditarRU').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editId').value;
+        const formData = new FormData(this);
+
+        fetch('/ru/' + id + '/', {
+            method: 'PATCH',
+            body: formData,
+            headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+        }).then(response => {
+            if (response.ok) {
+                alert('RU actualizada correctamente.');
+                window.location.reload();
+            } else {
+                alert('Error al actualizar. Revisa la consola.');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

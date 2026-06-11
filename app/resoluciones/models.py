@@ -2,6 +2,7 @@ from django.db import models
 
 class TipoRU(models.Model):
     nombre = models.CharField(max_length=100)
+    sigla = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return self.nombre
@@ -13,6 +14,7 @@ class TipoRU(models.Model):
 
 class CarreraPostgrado(models.Model):
     nombre = models.CharField(max_length=200)
+    sigla = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return self.nombre
@@ -42,6 +44,11 @@ class ResolucionUniversitaria(models.Model):
 
     def __str__(self):
         return self.nombre_generado
+
+    def delete(self, *args, **kwargs):
+        if self.archivo_pdf:
+            self.archivo_pdf.delete(save=False)
+            super().delete(*args, **kwargs)
 
     class Meta:
         verbose_name = "Resolución Universitaria"
