@@ -3,7 +3,8 @@ from .views import (
     ResolucionUniversitariaCreateView,
     ResolucionUniversitariaListView,
     ResolucionUniversitariaDetailView,
-    ResolucionGestionView
+    ResolucionGestionView,
+    VistoDeResolucionView,
 )
 
 urlpatterns = [
@@ -27,5 +28,11 @@ urlpatterns = [
 
     path(
         'resoluciones/gestion/', ResolucionGestionView.as_view(), name='ru-gestion'
+    ),
+
+    path(
+        'ru/<int:pk>/visto/',
+        VistoDeResolucionView.as_view(),
+        name='visto-resolucion'
     ),
 ]

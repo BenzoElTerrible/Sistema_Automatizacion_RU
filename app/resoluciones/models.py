@@ -41,6 +41,12 @@ class ResolucionUniversitaria(models.Model):
     nombre_generado = models.CharField(max_length=300, blank=True)
     archivo_pdf = models.FileField(upload_to='resoluciones/')
     fecha_subida = models.DateTimeField(auto_now_add=True)
+    vistos = models.ManyToManyField(
+        'self',
+        symmetrical=False,
+        blank=True,
+        related_name='referenciada_en'
+    )
 
     def __str__(self):
         return self.nombre_generado

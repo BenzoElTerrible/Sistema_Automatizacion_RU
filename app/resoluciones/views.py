@@ -89,3 +89,50 @@ class ResolucionGestionView(TemplateView):
         context["tipos"] = TipoRU.objects.all() # OJO para el formulario
         context["carreras"] = CarreraPostgrado.objects.all() # OJO para el formulario
         return context
+    
+class VistoDeResolucionView(APIView):
+    def get(self, request, pk):
+        try:
+            resolucion = ResolucionUniversitaria.objects.get(pk=pk)
+        except ResolucionUniversitaria.DoesNotExist:
+            return Response(
+                {"error": "La resolución no existe."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        vistos = resolucion.vistos.all()
+        if not vistos.exists():
+            return Response(
+                {"message": "Esta resolución no tiene vistos registrados."},
+                status=status.HTTP_200_OK
+            )
+
+        serializer = ResolucionUniversitariaSerializer(vistos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        try:
+            resolucion = ResolucionUniversitaria.objects.get(pk=pk)
+        except ResolucionUniversitaria.DoesNotExist:
+            return Response(
+                {"error": "La resolución no existe."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        vistos_ids = request.data.get('vistos')
+        if not vistos_ids or not isinstance(vistos_ids, list):
+            return Response(
+                {"error": "Debe proporcionar una lista en el campo 'vistos'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        nuevos_vistos = ResolucionUniversitaria.objects.filter(pk__in=vistos_ids)
+        if nuevos_vistos.count() != len(vistos_ids):
+            return Response(
+                {"error": "Una o más resoluciones indicadas no existen."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        resolucion.vistos.set(nuevos_vistos)
+        serializer = ResolucionUniversitariaSerializer(resolucion.vistos.all(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
