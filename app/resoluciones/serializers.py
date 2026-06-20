@@ -22,6 +22,17 @@ class ResolucionUniversitariaSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['nombre_generado', 'fecha_subida']
 
+    def get_vistos_detalle(self, obj):
+        return [
+            {
+                'id': v.id,
+                'nombre_generado': v.nombre_generado,
+                'anio': v.anio,
+                'numero_ru': v.numero_ru,
+            }
+            for v in obj.vistos.all()
+        ]
+
     def validate_archivo_pdf(self, value):
         if not value.name.lower().endswith('.pdf'):
             raise serializers.ValidationError("El archivo debe ser un PDF.")

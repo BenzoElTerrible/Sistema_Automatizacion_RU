@@ -1,5 +1,16 @@
 from django.db import models
 
+class TipoPrograma(models.Model):
+    nombre = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = "Tipo de Programa"
+        verbose_name_plural = "Tipos de Programa"
+
+
 class TipoRU(models.Model):
     nombre = models.CharField(max_length=100)
     sigla = models.CharField(max_length=20, blank=True)
@@ -15,6 +26,10 @@ class TipoRU(models.Model):
 class CarreraPostgrado(models.Model):
     nombre = models.CharField(max_length=200)
     sigla = models.CharField(max_length=20, blank=True)
+    tipo_programa = models.ForeignKey(
+        TipoPrograma, on_delete=models.PROTECT,
+        related_name='carreras', null=True, blank=True
+    )
 
     def __str__(self):
         return self.nombre
@@ -24,8 +39,22 @@ class CarreraPostgrado(models.Model):
         verbose_name_plural = "Carreras de Postgrado"
 
 
-class ResolucionUniversitaria(models.Model):
+class Visto(models.Model):
+    texto = models.TextField()
+    tipo_programa = models.ForeignKey(
+        TipoPrograma, on_delete=models.CASCADE,
+        related_name='vistos'
+    )
 
+    def __str__(self):
+        return f"Visto [{self.tipo_programa.nombre}]: {self.texto[:50]}"
+
+    class Meta:
+        verbose_name = "Visto"
+        verbose_name_plural = "Vistos"
+
+
+class ResolucionUniversitaria(models.Model):
     SECCION_CHOICES = [
         ('Rectoria', 'Rectoría'),
         ('Postgrado', 'Postgrado'),
@@ -41,12 +70,6 @@ class ResolucionUniversitaria(models.Model):
     nombre_generado = models.CharField(max_length=300, blank=True)
     archivo_pdf = models.FileField(upload_to='resoluciones/')
     fecha_subida = models.DateTimeField(auto_now_add=True)
-    vistos = models.ManyToManyField(
-        'self',
-        symmetrical=False,
-        blank=True,
-        related_name='referenciada_en'
-    )
 
     def __str__(self):
         return self.nombre_generado
@@ -54,7 +77,7 @@ class ResolucionUniversitaria(models.Model):
     def delete(self, *args, **kwargs):
         if self.archivo_pdf:
             self.archivo_pdf.delete(save=False)
-            super().delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
     class Meta:
         verbose_name = "Resolución Universitaria"
