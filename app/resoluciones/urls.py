@@ -9,7 +9,9 @@ from .views import (
     VistoListCreateView,
     VistoDetailView,
     VistosPaginaView,
-)
+    ResolucionCrearPaginaView,
+    ResolucionUniversitariaGenerarPDFView,
+    )
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/resoluciones/gestion/'), name='home'),
@@ -19,6 +21,9 @@ urlpatterns = [
     path('ru/<int:pk>/vistos/', VistosDeRUView.as_view(), name='vistos-ru'),
     path('resoluciones/gestion/', ResolucionGestionView.as_view(), name='ru-gestion'),
     path('resoluciones/vistos/', VistosPaginaView.as_view(), name='vistos-pagina'),
+    path('resoluciones/crear/', ResolucionCrearPaginaView.as_view(), name='ru-crear'),
+    path('ru/generar-pdf/', ResolucionUniversitariaGenerarPDFView.as_view(), name='ru-generar-pdf'),
+    
     path('vistos/', VistoListCreateView.as_view(), name='visto-list-create'),
     path('vistos/<int:pk>/', VistoDetailView.as_view(), name='visto-detail'),
 ]

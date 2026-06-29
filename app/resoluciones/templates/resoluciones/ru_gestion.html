@@ -23,20 +23,19 @@
             <table id="tablaRU" class="table table-striped table-hover">
 				<thead>
 					<tr>
-						<th>
-							<span class="custom-checkbox">
-								<input type="checkbox" id="selectAll">
-								<label for="selectAll"></label>
-							</span>
-						</th>
-						<th>Nombre (generado)</th>
-						<th>Tipo</th>
-						<th>Carrera asociada</th>
+                        <th>
+                            <span class="custom-checkbox">
+                                <input type="checkbox" id="selectAll">
+                                <label for="selectAll"></label>
+                            </span>
+                        </th>
+                        <th>Nombre (generado)</th>
+                        <th>Tipo</th>
+                        <th>Carrera asociada</th>
                         <th>Vistos</th>
-                        <th>Editar</th>
+                        <th>Vincular RUs</th> <th>Editar</th>
                         <th>Eliminar</th>
-
-					</tr>
+                    </tr>
 				</thead>
                 <tbody id="tabla-ru-body">
                     {% for ru in resoluciones %}
@@ -55,6 +54,11 @@
                         <td>
                             <a href="#" class="ver-vistos" data-id="{{ ru.id }}" data-nombre="{{ ru.nombre_generado }}">
                                 <i class="material-icons" title="Ver vistos">&#xE417;</i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" class="vincular-ru" data-id="{{ ru.id }}" data-nombre="{{ ru.nombre_generado }}">
+                                <i class="material-icons" title="Vincular como antecedente" style="color: #17a2b8;">link</i>
                             </a>
                         </td>
                         <td>
@@ -251,6 +255,102 @@
 {% endblock %}
 
 {% block extra_js %}
+
+<script>
+    // Variable global para almacenar todas las RUs y no saturar tu API
+    let catalogoRUs = [];
+
+    // Cargar catálogo al iniciar la página
+    $(document).ready(function() {
+        fetch('/ru/list/')
+            .then(r => r.json())
+            .then(data => { catalogoRUs = data; })
+            .catch(err => console.error("Error cargando catálogo de RUs:", err));
+    });
+
+    // Abrir Modal y Generar Checkboxes
+    $(document).on('click', '.vincular-ru', function(e) {
+        e.preventDefault();
+        const idActual = parseInt($(this).data('id'));
+        const nombreActual = $(this).data('nombre');
+
+        document.getElementById('vincularIdRU').value = idActual;
+        document.getElementById('vincularNombreRU').textContent = nombreActual;
+
+        const contenedor = document.getElementById('listaRUsVincular');
+        contenedor.innerHTML = '<p class="text-muted">Cargando...</p>';
+
+        // Consultamos cuáles RUs ya están vinculadas (basado en el endpoint de tus tests)
+        fetch('/ru/' + idActual + '/visto/')
+            .then(r => r.json())
+            .then(vinculadas => {
+                let vinculadasIds = [];
+                // Si la respuesta es un arreglo, extraemos los IDs
+                if (Array.isArray(vinculadas)) {
+                    vinculadasIds = vinculadas.map(v => v.id);
+                }
+
+                let html = '';
+                catalogoRUs.forEach(ru => {
+                    // Evitar que una RU se vincule a sí misma
+                    if (ru.id !== idActual) {
+                        const isChecked = vinculadasIds.includes(ru.id) ? 'checked' : '';
+                        html += `
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" name="rus_vinculadas" value="${ru.id}" class="custom-control-input" id="chk_vincular_${ru.id}" ${isChecked}>
+                                <label class="custom-control-label" style="font-size: 13px;" for="chk_vincular_${ru.id}">
+                                    ${ru.nombre_generado}
+                                </label>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (html === '') {
+                    html = '<p class="text-muted">No hay otras resoluciones registradas para vincular.</p>';
+                }
+
+                contenedor.innerHTML = html;
+                $('#vincularRUModal').modal('show');
+            })
+            .catch(err => {
+                contenedor.innerHTML = '<p class="text-danger">Aún no hay RUs vinculadas o la URL no responde.</p>';
+                $('#vincularRUModal').modal('show');
+            });
+    });
+
+    // Guardar los checkboxes seleccionados
+    document.getElementById('formVincularRU').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const idActual = document.getElementById('vincularIdRU').value;
+        
+        // Extraer IDs de los checkboxes que están seleccionados
+        const checkboxesMarcados = document.querySelectorAll('input[name="rus_vinculadas"]:checked');
+        const idsVinculados = Array.from(checkboxesMarcados).map(chk => parseInt(chk.value));
+
+        // Hacer la petición PATCH (Según tus pruebas de HU: Editar vistos)
+        fetch('/ru/' + idActual + '/visto/', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ vistos: idsVinculados })
+        })
+        .then(response => {
+            if (response.ok) {
+                $('#vincularRUModal').modal('hide');
+                alert('Vínculos actualizados correctamente.');
+            } else {
+                alert('Hubo un error al actualizar. Asegúrate de tener configurado el backend para esto.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error de conexión con el servidor.');
+        });
+    });
+</script>
 
 <script>
     $(document).on('change', '#selectAll', function() {
