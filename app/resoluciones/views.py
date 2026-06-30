@@ -76,20 +76,6 @@ a través de su carrera → tipo_programa → vistos. Solamente lo pongo porque 
 en una historia de usuario. Es el icono de ojo para ver los vistos en GestionRU y 
 el unico que se relaciona con (ru_gestion.html) de los views relacionados a vistos.
 """
-class VistosDeRUView(APIView):
-    def get(self, request, pk):
-        try:
-            ru = ResolucionUniversitaria.objects.get(pk=pk)
-        except ResolucionUniversitaria.DoesNotExist:
-            return Response({"error": "No existe"}, status=status.HTTP_404_NOT_FOUND)
-
-        tipo_programa = ru.carrera_asociada.tipo_programa
-        if not tipo_programa:
-            return Response([], status=status.HTTP_200_OK)
-
-        vistos = tipo_programa.vistos.all().values('id', 'texto', 'tipo_programa__nombre')
-        return Response(list(vistos), status=status.HTTP_200_OK)
-
 
 # CRUD de Vistos (para ru_vistos.html)
 class VistoListCreateView(APIView):
@@ -154,10 +140,11 @@ class ResolucionCrearPaginaView(TemplateView):
     
 
 # Componentes de ReportLab
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_JUSTIFY, TA_RIGHT, TA_CENTER
+from reportlab.lib.enums import TA_JUSTIFY, TA_RIGHT, TA_CENTER, TA_LEFT
+from reportlab.lib import colors
 
 
 class ResolucionUniversitariaGenerarPDFView(View):
@@ -178,11 +165,11 @@ class ResolucionUniversitariaGenerarPDFView(View):
         # 3. Crear el lienzo del documento
         doc = SimpleDocTemplate(
             response,
-            pagesize=A4,
+            pagesize=letter,
             leftMargin=85,
             rightMargin=71,
-            topMargin=71,
-            bottomMargin=71
+            topMargin=80,
+            bottomMargin=80
         )
 
         story = []
@@ -192,55 +179,150 @@ class ResolucionUniversitariaGenerarPDFView(View):
         style_normal = ParagraphStyle(
             'RU_Normal', 
             parent=styles['Normal'], 
-            fontName='Helvetica', 
-            fontSize=11, 
+            fontName='Times-Roman', 
+            fontSize=12, 
             leading=16, 
-            alignment=TA_JUSTIFY
+            alignment=TA_JUSTIFY,
+            firstLineIndent=0,
+            leftIndent=0,
         )
+        style_section_title = ParagraphStyle(
+            'RU_SectionTitle',
+            parent=styles['Normal'],
+            fontName='Times-Bold',
+            fontSize=12,
+            leading=16,
+            alignment=TA_CENTER,
+            leftIndent=0,
+            firstLineIndent=0,
+            spaceBefore=10,
+            spaceAfter=8,
+        )
+        style_considerando = ParagraphStyle(
+            'RU_Considerando',
+            parent=styles['Normal'],
+            fontName='Times-Roman',
+            fontSize=12,
+            leading=16,
+            alignment=TA_JUSTIFY,
+            leftIndent=0,
+            firstLineIndent=190,
+            rightIndent=0,
+            spaceAfter=10,
+        )
+        style_epigrafe = ParagraphStyle(
+            'RU_Epigrafe',
+            parent=styles['Normal'],
+            fontName='Times-Roman',
+            fontSize=12,
+            leading=14,
+            alignment=TA_JUSTIFY,
+        )
+        style_footer_center = ParagraphStyle(
+            'RU_FooterCenter',
+            parent=styles['Normal'],
+            fontName='Times-Roman',
+            fontSize=12,
+            leading=14,
+            alignment=TA_CENTER,
+        )
+
         style_bold_label = ParagraphStyle(
             'RU_BoldLabel', 
             parent=style_normal, 
-            fontName='Helvetica-Bold'
+            fontName='Times-Bold',
+            fontSize=12,
+            leading=16,
         )
         style_header_right = ParagraphStyle(
             'RU_HeaderRight', 
             parent=styles['Normal'], 
-            fontName='Helvetica-Bold', 
-            fontSize=11, 
-            leading=15, 
+            fontName='Times-Bold', 
+            fontSize=12, 
+            leading=14, 
             alignment=TA_RIGHT
         )
         style_footer_center = ParagraphStyle(
             'RU_FooterCenter', 
             parent=styles['Normal'], 
-            fontName='Helvetica-Bold', 
-            fontSize=11, 
-            leading=16, 
+            fontName='Times-Roman', 
+            fontSize=12, 
+            leading=14, 
             alignment=TA_CENTER
         )
 
         # 5. Logo Institucional
         logo_path = find('img/image_5e2339.png')
-        if logo_path and os.path.exists(logo_path):
-            img = Image(logo_path, width=145, height=85)
-            img.hAlign = 'LEFT'
-            story.append(img)
-        else:
-            story.append(Paragraph("<b>UNIVERSIDAD DE TALCA</b><br/>Dirección de Postgrado", style_normal))
-        
-        story.append(Spacer(1, 15))
 
-        # 6. Título, Fecha y Número
+        if logo_path and os.path.exists(logo_path):
+            logo = Image(logo_path)
+            logo.drawWidth = 160
+            logo.drawHeight = 160
+        else:
+            logo = Paragraph("<b>UNIVERSIDAD DE TALCA</b><br/>Dirección de Postgrado", style_normal)
+
+        epigrafe = Paragraph(titulo, style_header_right)
+
+        style_epigrafe = ParagraphStyle(
+            'RU_Epigrafe',
+            parent=styles['Normal'],
+            fontName='Times-Roman',
+            fontSize=12,
+            leading=14,
+            alignment=TA_JUSTIFY,
+        )
+
+        style_fecha_numero = ParagraphStyle(
+            'RU_FechaNumero',
+            parent=styles['Normal'],
+            fontName='Times-Roman',
+            fontSize=12,
+            leading=16,
+            alignment=TA_LEFT,
+        )
+
+         # 6. Título, Fecha y Número
         meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
         fecha_actual = datetime.now()
         fecha_str = f"TALCA, {fecha_actual.day} de {meses[fecha_actual.month - 1]} de {anio}"
 
-        texto_encabezado_derecho = f"{titulo}<br/><br/>{fecha_str}<br/>N° {numero_ru}"
-        story.append(Paragraph(texto_encabezado_derecho, style_header_right))
-        story.append(Spacer(1, 25))
+        epigrafe_box = Table(
+            [
+                [Paragraph(titulo, style_epigrafe)],
+                [Spacer(1, 18)],
+                [Paragraph(fecha_str, style_fecha_numero)],
+                [Spacer(1, 16)],
+                [Paragraph(f"<b>N° {numero_ru}</b>", style_fecha_numero)],
+            ],
+            colWidths=[250]
+        )
 
+        epigrafe_box.setStyle(TableStyle([
+            ('LINEABOVE', (0, 0), (0, 0), 0.6, colors.black),
+            ('LINEBELOW', (0, 0), (0, 0), 0.6, colors.black),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+
+        header_table = Table(
+            [[logo, epigrafe_box]],
+            colWidths=[250, 250]
+        )
+
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ]))
+
+        story.append(header_table)
+        story.append(Spacer(1, 22))
+
+        
         # 7. VISTOS
-        story.append(Paragraph("<b>VISTOS:</b>", style_bold_label))
+        story.append(Paragraph("<b>VISTOS:</b>", style_section_title))
         if vistos_textos:
             parrafo_vistos = "; ".join([v.strip() for v in vistos_textos]) + "."
         else:
@@ -249,13 +331,10 @@ class ResolucionUniversitariaGenerarPDFView(View):
         story.append(Spacer(1, 15))
 
         # 8. CONSIDERANDO (Automáticos a/b + Dinámicos c/d...)
-        story.append(Paragraph("<b>CONSIDERANDO:</b>", style_bold_label))
+        story.append(Paragraph("<b>CONSIDERANDO:</b>", style_section_title))
         
         # Preparamos la lista con los dos automáticos
-        lista_considerandos = [
-            f"Que, la Resolución Universitaria respectiva crea el programa de {carrera}.",
-            "Que, los antecedentes presentados por la Dirección de Postgrado justifican la presente acción."
-        ]
+        lista_considerandos = []
         
         # Agregamos los que vengan del formulario (si el usuario añadió extras)
         for cons in considerandos_extra:
@@ -264,16 +343,18 @@ class ResolucionUniversitariaGenerarPDFView(View):
 
         # Imprimimos la lista asignando la letra de manera secuencial
         for idx, cons_texto in enumerate(lista_considerandos):
-            letra = chr(97 + idx) # Genera a, b, c, d...
-            texto_cons_final = f"{letra}) {cons_texto}"
-            story.append(Paragraph(texto_cons_final, style_normal))
+            letra = chr(97 + idx)
+            cons_limpio = " ".join(cons_texto.split())
+            texto_cons_final = f"{letra}) {cons_limpio}"
+            story.append(Paragraph(texto_cons_final, style_considerando))
+            story.append(Spacer(1, 8))
         
         story.append(Spacer(1, 15))
 
         # 9. RESUELVO
-        story.append(Paragraph("<b>RESUELVO:</b>", style_bold_label))
+        story.append(Paragraph("<b>RESUELVO:</b>", style_section_title))
         if resuelvo_texto:
-            texto_formateado = resuelvo_texto.replace('\n', '<br/>')
+            texto_formateado = resuelvo_texto.strip().replace('\n', '<br/>')
             story.append(Paragraph(texto_formateado, style_normal))
         else:
             story.append(Paragraph("[Acción resolutiva principal no ingresada].", style_normal))
@@ -281,10 +362,35 @@ class ResolucionUniversitariaGenerarPDFView(View):
         story.append(Spacer(1, 45))
 
         # 10. Cierre del documento institucional
-        story.append(Spacer(1, 30))
-        story.append(Paragraph("ANÓTESE Y COMUNIQUESE", style_footer_center))
+        story.append(Spacer(1, 35))
+        story.append(Paragraph("ANÓTESE Y COMUNÍQUESE", style_footer_center))
         story.append(Paragraph('"POR ORDEN DEL SR. RECTOR"', style_footer_center))
-
+        story.append(Spacer(1, 45))
+        story.append(Paragraph("SWW/pgc", style_normal))
         # 11. Construir PDF
         doc.build(story)
         return response
+class RUHistoricasPorCarreraView(APIView):
+    def get(self, request, carrera_id):
+        resoluciones = ResolucionUniversitaria.objects.filter(
+            carrera_asociada_id=carrera_id
+        ).select_related("tipo", "carrera_asociada").order_by("-fecha_subida")
+
+        data = []
+
+        for ru in resoluciones:
+            considerando = (
+                f"Que, por la R.U. N° {ru.numero_ru} de fecha {ru.fecha_subida.strftime('%d/%m/%Y')}, "
+                f"se aprueba {ru.tipo.nombre.lower()} del Programa de {ru.carrera_asociada.nombre}."
+            )
+
+            data.append({
+                "id": ru.id,
+                "numero_ru": ru.numero_ru,
+                "fecha": ru.fecha_subida.strftime("%d/%m/%Y"),
+                "tipo": ru.tipo.nombre,
+                "carrera": ru.carrera_asociada.nombre,
+                "considerando": considerando,
+            })
+
+        return Response(data, status=status.HTTP_200_OK)

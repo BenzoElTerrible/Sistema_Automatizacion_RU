@@ -74,23 +74,14 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Sección de Origen</label>
-                        <select id="selectSeccion" name="seccion_origen" class="form-control" required>
-                            <option value="Rectoria">Rectoría</option>
-                            <option value="Postgrado" selected>Postgrado</option>
-                            <option value="Finanzas">Finanzas</option>
-                            <option value="Otra">Otra</option>
-                        </select>
-                    </div>
+                    <input type="hidden" name="seccion_origen" value="Postgrado">
 
                     <div class="form-group">
                         <label>Tipo de Resolución</label>
                         <select id="selectTipo" name="tipo" class="form-control" required>
                             <option value="">Seleccione tipo...</option>
-                            {% for t in tipos %}
-                                <option value="{{ t.nombre }}">{{ t.nombre }}</option>
-                            {% endfor %}
+                            <option value="Ayuda económica">Ayuda económica</option>
+                            <option value="Ingreso de estudiantes">Ingreso de estudiantes</option>
                         </select>
                     </div>
 
@@ -99,7 +90,12 @@
                         <select id="selectCarrera" name="carrera" class="form-control" required>
                             <option value="">Seleccione carrera...</option>
                             {% for c in carreras %}
-                                <option value="{{ c.nombre }}" data-programa-id="{{ c.tipo_programa.id }}">{{ c.nombre }}</option>
+                                <option 
+                                    value="{{ c.id }}" 
+                                    data-nombre="{{ c.nombre }}" 
+                                    data-programa-id="{{ c.tipo_programa.id }}">
+                                    {{ c.nombre }}
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
@@ -109,15 +105,16 @@
                         <div id="contenedorCheckboxesVistos" class="border p-3 bg-light" style="max-height: 200px; overflow-y: auto; border-radius: 4px;">
                             <p class="text-muted small mb-0">Selecciona una carrera para cargar sus vistos normativos.</p>
                         </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">RU históricas asociadas / respaldos</label>
+                            <div id="contenedorRUHistoricas" class="border p-3 bg-light" style="max-height: 220px; overflow-y: auto; border-radius: 4px;">
+                                <p class="text-muted small mb-0">Selecciona una carrera para cargar las RU históricas asociadas.</p>
+                            </div>
+                        </div>
                     </div>
                         <hr>
                         <div class="form-group">
                             <label class="font-weight-bold">Considerandos</label>
-                            
-                            <div class="mb-2 text-muted small px-2" style="border-left: 3px solid #17a2b8;">
-                                <strong>a)</strong> Que, la Resolución Universitaria respectiva crea el programa de <span id="labelCarreraConsForm">__________</span>.<br>
-                                <strong>b)</strong> Que, los antecedentes presentados por la Dirección de Postgrado justifican la presente acción.
-                            </div>
 
                             <div id="contenedorConsiderandosDinamicos"></div>
                             
@@ -161,10 +158,7 @@
                     <div class="doc-section">
                         <div class="doc-section-title">CONSIDERANDO:</div>
                         <div class="doc-text">
-                            <ol type="a" id="viewConsiderandosList">
-                                <li>Que, la Resolución Universitaria respectiva crea el programa de <span id="viewCarreraCons">__________</span>.</li>
-                                <li>Que, los antecedentes presentados por la Dirección de Postgrado justifican la presente acción.</li>
-                                </ol>
+                            <ol type="a" id="viewConsiderandosList"></ol>
                         </div>
                     </div>
                     <div class="doc-section">
@@ -192,14 +186,13 @@
     const inputTitulo = document.getElementById('inputTitulo');
     const inputAnio = document.getElementById('inputAnio');
     const inputNumero = document.getElementById('inputNumero');
-    const selectSeccion = document.getElementById('selectSeccion');
     const selectTipo = document.getElementById('selectTipo');
     const selectCarrera = document.getElementById('selectCarrera');
     const contenedorCheckboxesVistos = document.getElementById('contenedorCheckboxesVistos');
+    const contenedorRUHistoricas = document.getElementById('contenedorRUHistoricas');
     const inputResuelvo = document.getElementById('inputResuelvo');
 
     // Referencias para Considerandos (Form y Preview)
-    const labelCarreraConsForm = document.getElementById('labelCarreraConsForm');
     const viewConsiderandosList = document.getElementById('viewConsiderandosList');
 
     // Referencias de elementos de la previsualización general
@@ -207,9 +200,31 @@
     const viewFecha = document.getElementById('viewFecha');
     const viewNumero = document.getElementById('viewNumero');
     const viewVistosCuerpo = document.getElementById('viewVistosCuerpo');
-    const viewCarreraCons = document.getElementById('viewCarreraCons');
     const viewResuelvoCuerpo = document.getElementById('viewResuelvoCuerpo');
 
+    function reordenarRUHistoricasSeleccionadas() {
+        const seleccionadas = Array.from(document.querySelectorAll('.checkbox-ru-historica:checked'));
+
+        seleccionadas.sort((a, b) => {
+            const ordenA = parseInt(document.querySelector(`.orden-ru-historica[data-id="${a.dataset.id}"]`)?.value || '999');
+            const ordenB = parseInt(document.querySelector(`.orden-ru-historica[data-id="${b.dataset.id}"]`)?.value || '999');
+            return ordenA - ordenB;
+        });
+
+        seleccionadas.forEach((chk, index) => {
+            const inputOrden = document.querySelector(`.orden-ru-historica[data-id="${chk.dataset.id}"]`);
+            if (inputOrden) {
+                inputOrden.value = index + 1;
+            }
+        });
+
+        document.querySelectorAll('.checkbox-ru-historica:not(:checked)').forEach(chk => {
+            const inputOrden = document.querySelector(`.orden-ru-historica[data-id="${chk.dataset.id}"]`);
+            if (inputOrden) {
+                inputOrden.value = '';
+            }
+        });
+    }
     // 2. Función Global de Previsualización Pulida
     function actualizarVistaPrevia() {
         // Título Superior Derecho
@@ -220,11 +235,8 @@
         viewNumero.textContent = inputNumero.value || '____';
 
         // Sincronizar el nombre de la carrera en los considerandos automáticos (Form y Preview)
-        const carreraTexto = selectCarrera.value || '__________';
-        viewCarreraCons.textContent = carreraTexto;
-        if (labelCarreraConsForm) {
-            labelCarreraConsForm.textContent = carreraTexto;
-        }
+        const optionCarrera = selectCarrera.options[selectCarrera.selectedIndex];
+        const carreraTexto = optionCarrera.getAttribute('data-nombre') || '__________';
 
         // Fecha dinámica
         const anio = inputAnio.value || '2026';
@@ -238,9 +250,24 @@
         } else {
             viewResuelvoCuerpo.innerHTML = '<span class="text-muted italic">[Aquí se detallará la acción resolutiva principal].</span>';
         }
-
+        
+        viewConsiderandosList.innerHTML = '';
         // Considerandos Dinámicos: Limpiar los anteriores y renderizar los actuales
-        document.querySelectorAll('.dinamico-li').forEach(el => el.remove()); // Borra los dinámicos previos en la vista
+        const rusSeleccionadas = Array.from(document.querySelectorAll('.checkbox-ru-historica:checked'));
+
+        rusSeleccionadas.sort((a, b) => {
+            const ordenA = parseInt(document.querySelector(`.orden-ru-historica[data-id="${a.dataset.id}"]`)?.value || '999');
+            const ordenB = parseInt(document.querySelector(`.orden-ru-historica[data-id="${b.dataset.id}"]`)?.value || '999');
+
+            return ordenA - ordenB;
+        });
+
+        rusSeleccionadas.forEach(chk => {
+            const li = document.createElement('li');
+            li.className = 'dinamico-li';
+            li.textContent = chk.getAttribute('data-considerando');
+            viewConsiderandosList.appendChild(li);
+        });
         const inputsConsiderandos = document.querySelectorAll('.input-considerando');
         
         inputsConsiderandos.forEach(input => {
@@ -275,10 +302,11 @@
 
     // 4. Lógica para Cargar Vistos por API según Carrera seleccionada
     selectCarrera.addEventListener('change', function() {
-        actualizarVistaPrevia();
+        generarEpigrafePorDefecto();
+
         const optionSeleccionada = this.options[this.selectedIndex];
         const programaId = optionSeleccionada.getAttribute('data-programa-id');
-
+        const carreraId = this.value;
         if (!programaId) {
             contenedorCheckboxesVistos.innerHTML = '<p class="text-muted small mb-0">Selecciona una carrera para cargar sus vistos normativos.</p>';
             actualizarVistosEnPreview();
@@ -290,32 +318,41 @@
         fetch(`/vistos/?tipo_programa=${programaId}`)
             .then(response => response.json())
             .then(data => {
-                if (data.length === 0) {
+                if (!Array.isArray(data) || data.length === 0) {
                     contenedorCheckboxesVistos.innerHTML = '<p class="text-danger small mb-0">No hay vistos configurados para el tipo de programa de esta carrera.</p>';
                     actualizarVistosEnPreview();
+                    cargarRUHistoricas(carreraId);
                     return;
                 }
 
                 let htmlCheckboxes = '';
+
                 data.forEach(visto => {
-                    // IMPORTANTE: name="vistos_textos" para que el backend de Django (ReportLab) lo capture
                     htmlCheckboxes += `
                         <div class="custom-control custom-checkbox mb-2">
-                            <input type="checkbox" name="vistos_textos" value="${visto.texto.replace(/"/g, '&quot;')}" class="custom-control-input checkbox-visto-dinamico" id="chk_visto_${visto.id}" data-texto="${visto.texto.replace(/"/g, '&quot;')}">
+                            <input 
+                                type="checkbox" 
+                                name="vistos_textos" 
+                                value="${visto.texto.replace(/"/g, '&quot;')}" 
+                                class="custom-control-input checkbox-visto-dinamico" 
+                                id="chk_visto_${visto.id}" 
+                                data-texto="${visto.texto.replace(/"/g, '&quot;')}">
+
                             <label class="custom-control-label small text-justify" for="chk_visto_${visto.id}">
                                 ${visto.texto}
                             </label>
                         </div>
                     `;
                 });
+
                 contenedorCheckboxesVistos.innerHTML = htmlCheckboxes;
 
-                // Añadir oyentes de cambio a los nuevos checkboxes creados dinámicamente
                 document.querySelectorAll('.checkbox-visto-dinamico').forEach(chk => {
                     chk.addEventListener('change', actualizarVistosEnPreview);
                 });
-                
+
                 actualizarVistosEnPreview();
+                cargarRUHistoricas(carreraId);
             })
             .catch(err => {
                 console.error("Error al obtener vistos:", err);
@@ -323,6 +360,73 @@
             });
     });
 
+    function cargarRUHistoricas(carreraId) {
+        if (!carreraId) {
+            contenedorRUHistoricas.innerHTML = '<p class="text-muted small mb-0">Selecciona una carrera para cargar las RU históricas asociadas.</p>';
+            return;
+        }
+
+        contenedorRUHistoricas.innerHTML = '<p class="text-muted small mb-0">Cargando RU históricas...</p>';
+
+        fetch(`/ru-historicas/carrera/${carreraId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    contenedorRUHistoricas.innerHTML = '<p class="text-danger small mb-0">No hay RU históricas asociadas a esta carrera.</p>';
+                    return;
+                }
+
+                let html = '';
+
+                data.forEach(ru => {
+                    html += `
+                        <div class="d-flex align-items-start mb-2">
+                            <input 
+                                type="number"
+                                class="form-control form-control-sm mr-2 orden-ru-historica"
+                                style="width: 75px;"
+                                min="1"
+                                placeholder="Orden"
+                                data-id="${ru.id}">
+
+                            <div class="custom-control custom-checkbox flex-grow-1">
+                                <input 
+                                    type="checkbox" 
+                                    name="considerandos" 
+                                    value="${ru.considerando.replace(/"/g, '&quot;')}"
+                                    class="custom-control-input checkbox-ru-historica" 
+                                    id="ru_hist_${ru.id}" 
+                                    data-id="${ru.id}"
+                                    data-considerando="${ru.considerando.replace(/"/g, '&quot;')}">
+
+                                <label class="custom-control-label small text-justify" for="ru_hist_${ru.id}">
+                                    R.U. N° ${ru.numero_ru} - ${ru.fecha} - ${ru.tipo}
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                contenedorRUHistoricas.innerHTML = html;
+
+                document.querySelectorAll('.checkbox-ru-historica').forEach(chk => {
+                    chk.addEventListener('change', function() {
+                        reordenarRUHistoricasSeleccionadas();
+                        actualizarVistaPrevia();
+                    });
+                });
+
+                document.querySelectorAll('.orden-ru-historica').forEach(input => {
+                    input.addEventListener('input', actualizarVistaPrevia);
+                });
+
+                actualizarVistaPrevia();
+            })
+            .catch(err => {
+                console.error("Error al obtener RU históricas:", err);
+                contenedorRUHistoricas.innerHTML = '<p class="text-danger small mb-0">Error al cargar RU históricas.</p>';
+            });
+    }
     // 5. Lógica para agregar nuevos considerandos dinámicamente (Iniciando en la letra 'c')
     document.getElementById('btnAddConsiderando').addEventListener('click', function() {
         const contenedor = document.getElementById('contenedorConsiderandosDinamicos');
@@ -364,15 +468,34 @@
         });
     }
 
-    // 6. Escuchar eventos básicos de escritura/cambio para actualizar la hoja inmediatamente
+    // Llamada inicial por si el navegador recarga con datos en memoria
+    actualizarVistaPrevia();
+
+    function generarEpigrafePorDefecto() {
+        const tipo = selectTipo.value;
+        const anio = inputAnio.value || '2026';
+
+        const optionCarrera = selectCarrera.options[selectCarrera.selectedIndex];
+        const carreraTexto = optionCarrera?.getAttribute('data-nombre') || '[PROGRAMA]';
+
+        if (tipo === 'Ayuda económica') {
+            inputTitulo.value = `REGULARIZA ACTIVIDAD ACADÉMICA NACIONAL Y OTORGA AYUDA ECONÓMICA A ESTUDIANTE DEL PROGRAMA DE ${carreraTexto}, QUE SE INDICA.`;
+        }
+
+        if (tipo === 'Ingreso de estudiantes') {
+            inputTitulo.value = `REGULARIZA INGRESO DE ESTUDIANTES AL PROGRAMA DE ${carreraTexto}, PARA EL AÑO ${anio}.`;
+        }
+
+        actualizarVistaPrevia();
+    }
+
+    // 6. Escuchar eventos básicos
     inputTitulo.addEventListener('input', actualizarVistaPrevia);
-    inputAnio.addEventListener('input', actualizarVistaPrevia);
     inputNumero.addEventListener('input', actualizarVistaPrevia);
-    selectSeccion.addEventListener('change', actualizarVistaPrevia);
-    selectTipo.addEventListener('change', actualizarVistaPrevia);
     inputResuelvo.addEventListener('input', actualizarVistaPrevia);
 
-    // Llamada inicial por si el navegador recarga con datos en memoria
+    selectTipo.addEventListener('change', generarEpigrafePorDefecto);
+    inputAnio.addEventListener('input', generarEpigrafePorDefecto);
     actualizarVistaPrevia();
 </script>
 {% endblock %}
