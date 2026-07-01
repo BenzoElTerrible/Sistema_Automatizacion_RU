@@ -1,0 +1,239 @@
+{% extends "base/base.html" %}
+{% block active_vistos %}active{% endblock %}
+
+{% block content %}
+<div class="table-wrapper">
+    <div class="table-title">
+        <div class="row">
+            <div class="col-sm-12">
+                <h2>Gestión de Vistos</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtro por TipoPrograma + botón crear -->
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <div>
+            <label class="mr-2">Filtrar por tipo de programa:</label>
+            <select id="filtroPrograma" class="form-control d-inline-block" style="width:auto;">
+                <option value="">Todos</option>
+                {% for tp in tipos_programa %}
+                    <option value="{{ tp.id }}">{{ tp.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="btn btn-success" data-toggle="modal" data-target="#addVistoModal">
+            <i class="material-icons" style="vertical-align:middle;">add</i> Nuevo Visto
+        </button>
+    </div>
+
+    <table id="tablaVistos" class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Tipo de programa</th>
+                <th>Texto del visto</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpoTablaVistos">
+            <!-- JS rellena esto -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Agregar Visto -->
+<div id="addVistoModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Nuevo Visto</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tipo de Programa</label>
+                    <select id="addTipoPrograma" class="form-control" required>
+                        <option value="">Seleccione...</option>
+                        {% for tp in tipos_programa %}
+                            <option value="{{ tp.id }}">{{ tp.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Texto del Visto</label>
+                    <textarea id="addTextoVisto" class="form-control" rows="4" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnGuardarVisto">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Visto -->
+<div id="editVistoModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Editar Visto</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editVistoId">
+                <div class="form-group">
+                    <label>Texto del Visto</label>
+                    <textarea id="editTextoVisto" class="form-control" rows="4" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="btnActualizarVisto">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div id="deleteVistoModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Eliminar Visto</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro/a de eliminar este visto?</p>
+                <input type="hidden" id="deleteVistoId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') 
+    ? document.querySelector('[name=csrfmiddlewaretoken]').value 
+    : '{{ csrf_token }}';
+
+function cargarVistos(tipoProgramaId) {
+    let url = '/vistos/';
+    if (tipoProgramaId) url += '?tipo_programa=' + tipoProgramaId;
+
+    fetch(url)
+        .then(r => r.json())
+        .then(function(data) {
+            const tbody = document.getElementById('cuerpoTablaVistos');
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay vistos registrados.</td></tr>';
+                return;
+            }
+            let html = '';
+            data.forEach(function(v) {
+                html += `<tr>
+                    <td>${v.tipo_programa__nombre}</td>
+                    <td>${v.texto}</td>
+                    <td>
+                        <a href="#" class="edit-visto" data-id="${v.id}" data-texto="${v.texto.replace(/"/g, '&quot;')}">
+                            <i class="material-icons" style="color:#FFC107;">edit</i>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#" class="delete-visto" data-id="${v.id}">
+                            <i class="material-icons" style="color:#F44336;">delete</i>
+                        </a>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        });
+}
+
+// Carga inicial
+cargarVistos('');
+
+// Filtro
+document.getElementById('filtroPrograma').addEventListener('change', function() {
+    cargarVistos(this.value);
+});
+
+// Crear visto
+document.getElementById('btnGuardarVisto').addEventListener('click', function() {
+    const texto = document.getElementById('addTextoVisto').value.trim();
+    const tipo = document.getElementById('addTipoPrograma').value;
+    if (!texto || !tipo) { alert('Completa todos los campos.'); return; }
+
+    fetch('/vistos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ texto: texto, tipo_programa: tipo })
+    }).then(r => {
+        if (r.ok) {
+            $('#addVistoModal').modal('hide');
+            document.getElementById('addTextoVisto').value = '';
+            cargarVistos(document.getElementById('filtroPrograma').value);
+        } else {
+            alert('Error al guardar.');
+        }
+    });
+});
+
+// Editar visto — abrir modal
+$(document).on('click', '.edit-visto', function(e) {
+    e.preventDefault();
+    document.getElementById('editVistoId').value = $(this).data('id');
+    document.getElementById('editTextoVisto').value = $(this).data('texto');
+    $('#editVistoModal').modal('show');
+});
+
+// Editar visto — guardar
+document.getElementById('btnActualizarVisto').addEventListener('click', function() {
+    const id = document.getElementById('editVistoId').value;
+    const texto = document.getElementById('editTextoVisto').value.trim();
+    if (!texto) { alert('El texto no puede estar vacío.'); return; }
+
+    fetch('/vistos/' + id + '/', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ texto: texto })
+    }).then(r => {
+        if (r.ok) {
+            $('#editVistoModal').modal('hide');
+            cargarVistos(document.getElementById('filtroPrograma').value);
+        } else {
+            alert('Error al actualizar.');
+        }
+    });
+});
+
+// Eliminar — abrir modal
+$(document).on('click', '.delete-visto', function(e) {
+    e.preventDefault();
+    document.getElementById('deleteVistoId').value = $(this).data('id');
+    $('#deleteVistoModal').modal('show');
+});
+
+// Eliminar — confirmar
+document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
+    const id = document.getElementById('deleteVistoId').value;
+    fetch('/vistos/' + id + '/', {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': csrfToken }
+    }).then(r => {
+        if (r.ok) {
+            $('#deleteVistoModal').modal('hide');
+            cargarVistos(document.getElementById('filtroPrograma').value);
+        } else {
+            alert('Error al eliminar.');
+        }
+    });
+});
+</script>
+{% endblock %}
