@@ -12,7 +12,8 @@ from django.http import HttpResponse
 from django.views.generic import View
 from django.contrib.staticfiles.finders import find
 from datetime import datetime
-
+import zipfile
+from io import BytesIO
 class ResolucionUniversitariaCreateView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
@@ -379,18 +380,56 @@ class RUHistoricasPorCarreraView(APIView):
         data = []
 
         for ru in resoluciones:
+            meses = [
+                "enero", "febrero", "marzo", "abril", "mayo", "junio",
+                "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+            ]
+
+            fecha = ru.fecha_subida
+            fecha_larga = f"{fecha.day} de {meses[fecha.month - 1]} de {fecha.year}"
+
             considerando = (
-                f"Que, por la R.U. N° {ru.numero_ru} de fecha {ru.fecha_subida.strftime('%d/%m/%Y')}, "
+                f"Que, por la R.U. N° {ru.numero_ru} de fecha {fecha_larga}, "
                 f"se aprueba {ru.tipo.nombre.lower()} del Programa de {ru.carrera_asociada.nombre}."
             )
 
             data.append({
                 "id": ru.id,
                 "numero_ru": ru.numero_ru,
-                "fecha": ru.fecha_subida.strftime("%d/%m/%Y"),
+                "fecha": fecha_larga,
                 "tipo": ru.tipo.nombre,
                 "carrera": ru.carrera_asociada.nombre,
                 "considerando": considerando,
+                "archivo_pdf": ru.archivo_pdf.url if ru.archivo_pdf else None,
             })
 
         return Response(data, status=status.HTTP_200_OK)
+    
+class DescargarRespaldosRUZipView(View):
+    def post(self, request, *args, **kwargs):
+        ids = request.POST.getlist('ru_ids')
+
+        if not ids:
+            return HttpResponse("No se seleccionaron RU históricas.", status=400)
+
+        buffer = BytesIO()
+
+        with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            resoluciones = ResolucionUniversitaria.objects.filter(id__in=ids)
+
+            for ru in resoluciones:
+                if not ru.archivo_pdf:
+                    continue
+
+                nombre_archivo = f"RU_{ru.numero_ru}_{ru.anio}.pdf"
+
+                try:
+                    zip_file.write(ru.archivo_pdf.path, nombre_archivo)
+                except FileNotFoundError:
+                    continue
+
+        buffer.seek(0)
+
+        response = HttpResponse(buffer, content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="respaldos_ru.zip"'
+        return response

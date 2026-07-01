@@ -11,6 +11,7 @@ from .views import (
     VistosPaginaView,
     ResolucionCrearPaginaView,
     ResolucionUniversitariaGenerarPDFView,
+    DescargarRespaldosRUZipView
     )
 
 urlpatterns = [
@@ -22,7 +23,7 @@ urlpatterns = [
     path('resoluciones/vistos/', VistosPaginaView.as_view(), name='vistos-pagina'),
     path('resoluciones/crear/', ResolucionCrearPaginaView.as_view(), name='ru-crear'),
     path('ru/generar-pdf/', ResolucionUniversitariaGenerarPDFView.as_view(), name='ru-generar-pdf'),
-    
+    path('ru/respaldos/zip/', DescargarRespaldosRUZipView.as_view(), name='ru-respaldos-zip'),
     path('vistos/', VistoListCreateView.as_view(), name='visto-list-create'),
     path('vistos/<int:pk>/', VistoDetailView.as_view(), name='visto-detail'),
     path('ru-historicas/carrera/<int:carrera_id>/',RUHistoricasPorCarreraView.as_view(),name="ru-historicas-por-carrera"),

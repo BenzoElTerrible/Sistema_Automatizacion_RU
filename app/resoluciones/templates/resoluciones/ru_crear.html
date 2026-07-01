@@ -110,6 +110,9 @@
                             <div id="contenedorRUHistoricas" class="border p-3 bg-light" style="max-height: 220px; overflow-y: auto; border-radius: 4px;">
                                 <p class="text-muted small mb-0">Selecciona una carrera para cargar las RU históricas asociadas.</p>
                             </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnDescargarRespaldos">
+                                Descargar respaldos seleccionados
+                            </button>
                         </div>
                     </div>
                         <hr>
@@ -496,6 +499,38 @@
 
     selectTipo.addEventListener('change', generarEpigrafePorDefecto);
     inputAnio.addEventListener('input', generarEpigrafePorDefecto);
+
+    document.getElementById('btnDescargarRespaldos').addEventListener('click', function() {
+        const seleccionadas = Array.from(document.querySelectorAll('.checkbox-ru-historica:checked'));
+
+        if (seleccionadas.length === 0) {
+            alert('Selecciona al menos una RU histórica para descargar sus respaldos.');
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/ru/respaldos/zip/';
+        form.target = '_blank';
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        form.appendChild(csrfInput);
+
+        seleccionadas.forEach(chk => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ru_ids';
+            input.value = chk.dataset.id;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+    });
     actualizarVistaPrevia();
 </script>
 {% endblock %}
