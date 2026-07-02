@@ -32,6 +32,7 @@
                         <th>Nombre (generado)</th>
                         <th>Tipo</th>
                         <th>Carrera asociada</th>
+                        <th>PDF</th>
                         <th>Editar</th>
                         <th>Eliminar</th>
                     </tr>
@@ -49,7 +50,18 @@
                         <td>{{ ru.nombre_generado }}</td>
                         <td>{{ ru.tipo.nombre }}</td>
                         <td>{{ ru.carrera_asociada.nombre }}</td>
-                        
+                        <td>
+                            {% if ru.archivo_pdf %}
+                                <a href="{{ ru.archivo_pdf.url }}" target="_blank" class="btn btn-sm btn-info">
+                                    Ver
+                                </a>
+                                <a href="{{ ru.archivo_pdf.url }}" download class="btn btn-sm btn-secondary">
+                                    Descargar
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Sin PDF</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <a href="#" class="edit" data-id="{{ ru.id }}">
                                 <i class="material-icons" title="Editar">&#xE254;</i>
@@ -64,7 +76,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center">No hay resoluciones registradas an.</td>
+                        <td colspan="7" class="text-center">No hay resoluciones registradas an.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -92,6 +104,11 @@
                         <label>Numero RU</label>
                         <input type="number" name="numero_ru" class="form-control" min="1" max="99999" required onkeydown="return ['Backspace','Delete','ArrowLeft','ArrowRight','Tab'].includes(event.key) || (event.key >= '0' && event.key <= '9')">
                     </div>
+
+                    <div class="form-group">
+                        <label>Fecha de resolución</label>
+                        <input type="date" name="fecha_resolucion" class="form-control" required>
+                    </div>
                     
                     <div class="form-group">
                         <label>Seccion de origen</label>
@@ -112,7 +129,24 @@
                                 <option value="{{ t.id }}">{{ t.nombre }}</option>
                             {% endfor %}
                         </select>
-                    </div>                  
+                    </div>
+
+                    <div id="camposDirector" style="display: none;">
+                        <div class="form-group">
+                            <label>Nombre del director</label>
+                            <input type="text" name="nombre_director" class="form-control" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fecha de inicio</label>
+                            <input type="date" name="fecha_inicio_director" class="form-control" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fecha de vencimiento</label>
+                            <input type="date" name="fecha_vencimiento_director" class="form-control" disabled>
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label>Carrera Asociada</label>
@@ -238,6 +272,23 @@
     });
 </script>
 
+<script>
+document.querySelector('select[name="tipo"]').addEventListener('change', function() {
+    const textoTipo = this.options[this.selectedIndex].text.toLowerCase();
+    const camposDirector = document.getElementById('camposDirector');
+
+    if (textoTipo.includes('director')) {
+        camposDirector.style.display = 'block';
+    } else {
+        camposDirector.style.display = 'none';
+
+        camposDirector.querySelectorAll('input').forEach(input => {
+            input.value = '';
+        });
+    }
+});
+</script>
+
 <!-- Script para crear en formulario -->
 <script>
 document.getElementById('formAgregarRU').addEventListener('submit', function(e) {
@@ -262,7 +313,18 @@ document.getElementById('formAgregarRU').addEventListener('submit', function(e) 
         } else {
             return response.json().then(err => {
                 console.error(err);
-                const mensaje = err.archivo_pdf ? err.archivo_pdf[0] : "Hubo un error al guardar. Revisa la consola.";
+                console.error("Errores del servidor:", err);
+
+                let mensaje = "Hubo un error al guardar.";
+
+                if (err.archivo_pdf) {
+                    mensaje = err.archivo_pdf[0];
+                } else if (err.error) {
+                    mensaje = err.error;
+                } else {
+                    mensaje = JSON.stringify(err);
+                }
+
                 alert(mensaje);
             });
         }
@@ -396,5 +458,33 @@ document.getElementById('formEliminarRU').addEventListener('submit', function(e)
         });
     });
 </script>
+<script>
+document.querySelector('select[name="tipo"]').addEventListener('change', function() {
+    const textoTipo = this.options[this.selectedIndex].text.toLowerCase();
+    const camposDirector = document.getElementById('camposDirector');
+    const inputsDirector = camposDirector.querySelectorAll('input');
 
+    if (textoTipo.includes('director')) {
+        camposDirector.style.display = 'block';
+        inputsDirector.forEach(input => {
+            input.disabled = false;
+        });
+    } else {
+        camposDirector.style.display = 'none';
+        inputsDirector.forEach(input => {
+            input.value = '';
+            input.disabled = true;
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const camposDirector = document.getElementById('camposDirector');
+    if (camposDirector) {
+        camposDirector.querySelectorAll('input').forEach(input => {
+            input.disabled = true;
+        });
+    }
+});
+</script>
 {% endblock %}

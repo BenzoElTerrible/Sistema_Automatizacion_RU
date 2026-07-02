@@ -51,7 +51,7 @@
             <div class="card-form">
                 <h4 class="mb-3" style="color: #435d7d;">Datos del Documento</h4>
                 
-                <form id="formAsistenteRU" method="POST" action="{% url 'ru-generar-pdf' %}" target="_blank">
+                <form id="formAsistenteRU" method="POST" action="{% url 'ru-generar-word' %}" target="_blank">
                     {% csrf_token %}
                     
                     <div class="form-group">
@@ -132,7 +132,7 @@
                             <small class="text-muted">Escribe la o las acciones. Puedes incluir los números (1., 2., etc.).</small>
                         </div>
                     <button type="submit" class="btn btn-primary btn-block mt-4" style="background-color: #435d7d; border-color: #435d7d;">
-                        <i class="material-icons" style="vertical-align:middle; font-size:18px;">download</i> Descargar PDF Oficial
+                        <i class="material-icons" style="vertical-align:middle; font-size:18px;">download</i> Descargar Word Oficial
                     </button>
                 </form>
             </div>
