@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from rest_framework.permissions import AllowAny, IsAdminUser
 from .serializers import ResolucionUniversitariaSerializer
 from .models import ResolucionUniversitaria, TipoRU, CarreraPostgrado, TipoPrograma, Visto
 
@@ -12,8 +12,10 @@ from django.http import HttpResponse
 from django.views.generic import View
 from django.contrib.staticfiles.finders import find
 from datetime import datetime
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class ResolucionUniversitariaCreateView(APIView):
+    permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
@@ -25,6 +27,7 @@ class ResolucionUniversitariaCreateView(APIView):
 
 
 class ResolucionUniversitariaListView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         resoluciones = ResolucionUniversitaria.objects.all()
         serializer = ResolucionUniversitariaSerializer(resoluciones, many=True)
@@ -32,36 +35,79 @@ class ResolucionUniversitariaListView(APIView):
 
 
 class ResolucionUniversitariaDetailView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, pk):
         try:
             resolucion = ResolucionUniversitaria.objects.get(pk=pk)
         except ResolucionUniversitaria.DoesNotExist:
-            return Response({"error": "La resolución no existe"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "La resolución no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         serializer = ResolucionUniversitariaSerializer(resolucion)
         return Response(serializer.data)
 
     def delete(self, request, pk):
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Solo un administrador puede eliminar archivos."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         try:
             resolucion = ResolucionUniversitaria.objects.get(pk=pk)
         except ResolucionUniversitaria.DoesNotExist:
-            return Response({"error": "No existe"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "No existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         resolucion.delete()
-        return Response({"message": "Eliminado."}, status=status.HTTP_204_NO_CONTENT)
 
-    def patch(self, request, pk):
-        try:
-            resolucion = ResolucionUniversitaria.objects.get(pk=pk)
-        except ResolucionUniversitaria.DoesNotExist:
-            return Response({"error": "No existe"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = ResolucionUniversitariaSerializer(resolucion, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"message": "Eliminado."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+    
+def patch(self, request, pk):
+
+    if not request.user.is_staff:
+        return Response(
+            {"error": "Solo un administrador puede editar."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        resolucion = ResolucionUniversitaria.objects.get(pk=pk)
+    except ResolucionUniversitaria.DoesNotExist:
+        return Response(
+            {"error": "No existe"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    serializer = ResolucionUniversitariaSerializer(
+        resolucion,
+        data=request.data,
+        partial=True
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+
+    return Response(
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
-class ResolucionGestionView(TemplateView):
+class ResolucionGestionView(LoginRequiredMixin, TemplateView):
+    login_url = "/admin/login/"
     template_name = "resoluciones/ru_gestion.html"
+   
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -115,26 +161,54 @@ class VistoListCreateView(APIView):
 
 
 class VistoDetailView(APIView):
+
     def patch(self, request, pk):
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Solo un administrador puede editar."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         try:
             visto = Visto.objects.get(pk=pk)
         except Visto.DoesNotExist:
-            return Response({"error": "No existe."}, status=status.HTTP_404_NOT_FOUND)
-        texto = request.data.get('texto')
+            return Response(
+                {"error": "No existe."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        texto = request.data.get("texto")
+
         if texto:
             visto.texto = texto
             visto.save()
-        return Response({'id': visto.id, 'texto': visto.texto})
+
+        return Response({
+            "id": visto.id,
+            "texto": visto.texto
+        })
 
     def delete(self, request, pk):
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Solo un administrador puede eliminar."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         try:
             visto = Visto.objects.get(pk=pk)
         except Visto.DoesNotExist:
-            return Response({"error": "No existe."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "No existe."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         visto.delete()
-        return Response({"message": "Eliminado."}, status=status.HTTP_204_NO_CONTENT)
 
-
+        return Response(
+            {"message": "Eliminado."},
+            status=status.HTTP_204_NO_CONTENT
+        )
 class VistosPaginaView(TemplateView):
     template_name = "resoluciones/ru_vistos.html"
 
@@ -143,8 +217,10 @@ class VistosPaginaView(TemplateView):
         context["tipos_programa"] = TipoPrograma.objects.all()
         return context
 
-class ResolucionCrearPaginaView(TemplateView):
+class ResolucionCrearPaginaView(LoginRequiredMixin, TemplateView):
+    login_url = "/admin/login/"
     template_name = "resoluciones/ru_crear.html"
+   
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

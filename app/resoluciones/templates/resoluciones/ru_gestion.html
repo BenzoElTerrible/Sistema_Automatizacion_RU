@@ -31,7 +31,7 @@
                         </th>
                         <th>Nombre (generado)</th>
                         <th>Tipo</th>
-                        <th>Carrera asociada</th>
+                        <th>programa asociado</th>
                         <th>Vistos</th>
                         <th>Vincular RUs</th> <th>Editar</th>
                         <th>Eliminar</th>
@@ -126,9 +126,9 @@
                     </div>                  
 
                     <div class="form-group">
-                        <label>Carrera Asociada</label>
+                        <label>Programa asociado</label>
                         <select name="carrera_asociada" class="form-control" required>
-                            <option value="">Seleccione una carrera...</option>
+                            <option value="">Seleccione un programa...</option>
                             {% for c in carreras %}
                                 <option value="{{ c.id }}">{{ c.nombre }}</option>
                             {% endfor %}
@@ -188,7 +188,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Carrera Asociada</label>
+                        <label>Programa asociado</label>
                         <select id="editCarrera" name="carrera_asociada" class="form-control" required>
                             {% for c in carreras %}
                                 <option value="{{ c.id }}">{{ c.nombre }}</option>
