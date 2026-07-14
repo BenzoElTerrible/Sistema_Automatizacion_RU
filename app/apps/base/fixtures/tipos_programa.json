@@ -1,5 +1,6 @@
 [
   {"model": "base.tipoprograma", "pk": 1, "fields": {"nombre": "Doctorado"}},
   {"model": "base.tipoprograma", "pk": 2, "fields": {"nombre": "Magíster"}},
-  {"model": "base.tipoprograma", "pk": 3, "fields": {"nombre": "Especialización"}}
+  {"model": "base.tipoprograma", "pk": 3, "fields": {"nombre": "Especialidad Médica"}},
+  {"model": "base.tipoprograma", "pk": 4, "fields": {"nombre": "Especialidad Odontológica"}}
 ]

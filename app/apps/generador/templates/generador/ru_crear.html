@@ -6,33 +6,59 @@
 <style>
     .preview-wrapper {
         background: #e9ecef;
-        padding: 20px;
+        padding: 4px;
         border-radius: 5px;
         overflow-x: auto;
     }
     .preview-paper {
         background: #ffffff;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        width: 21cm; 
-        min-height: 29.7cm; 
-        padding: 2.5cm 2.5cm 2.5cm 3cm;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+        /* Mismas dimensiones que el Word: tamaño carta */
+        width: 8.5in;
+        min-height: 11in;
+        box-sizing: border-box;
+
+        /* Mismos márgenes internos del Word */
+        padding: 1in 1in 1in 1.18in;
         margin: 0 auto;
+
         color: #000000;
-        font-family: 'Arial', sans-serif;
-        font-size: 11pt;
-        line-height: 1.5;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12pt;
+        line-height: 1;
     }
-    .doc-header { margin-bottom: 30px; }
-    .doc-title-box { margin-left: 45%; margin-bottom: 20px; }
-    .doc-title { text-transform: uppercase; font-weight: bold; text-align: right; margin-bottom: 15px; }
-    .doc-date-num { text-align: right; text-transform: uppercase; }
-    .doc-section { margin-bottom: 15px; }
-    .doc-section-title { font-weight: bold; margin-bottom: 5px; }
-    .doc-text { text-align: justify; }
-    .doc-text ol { padding-left: 20px; margin-top: 5px; }
-    .doc-text li { margin-bottom: 10px; }
-    .doc-footer { margin-top: 60px; }
-    .doc-footer-firma { text-align: center; font-weight: bold; margin-top: 30px; }
+    .doc-header {
+        display: grid;
+        grid-template-columns: 3.2in 1fr;
+        align-items: start;
+        margin-bottom: 12pt;
+    }
+    .doc-logo {
+        width: 1.8in;
+        height: auto;
+        object-fit: contain;
+    }
+    .doc-title-box {margin: 0;}
+    .doc-title {
+        text-transform: uppercase;
+        font-weight: normal;
+        text-align: justify;
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+        padding: 1pt 0;
+        margin-bottom: 12pt;}
+    .doc-date-num {text-align: left;text-transform: none;}
+    .doc-number {font-weight: bold; margin-top: 12pt;}
+    .doc-section {margin: 0;}
+    .doc-section-title { font-weight: bold; text-align: center; margin: 10pt 0 8pt;}
+    .doc-text { text-align: justify;}
+    .doc-text ol { padding-left: 0; margin: 0; list-style-position: inside;}
+    .doc-text li {text-indent: 3.5in; margin-bottom: 8pt;}
+    .doc-footer {margin-top: 24pt;}
+    .doc-footer-firma {text-align: center; font-weight: normal;}
+    .doc-footer-firma p {margin: 0 0 8pt;}
+    .doc-initials {margin-top: 12pt;}
     .card-form { background: #fff; padding: 25px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 </style>
 {% endblock %}
@@ -143,13 +169,26 @@
             <div class="preview-wrapper">
                 <div class="preview-paper">
                     <div class="doc-header">
-                        <img src="{% static 'img/image_5e2339.png' %}" alt="Logo Dirección de Postgrado" style="height: 90px; object-fit: contain;">
-                    </div>
-                    <div class="doc-title-box">
-                        <div class="doc-title" id="viewTitulo">[TÍTULO DE LA RESOLUCIÓN EN MAYÚSCULAS]</div>
-                        <div class="doc-date-num">
-                            TALCA, <span id="viewFecha">___ de ______ de 2026</span><br>
-                            N°<span id="viewNumero">____</span>
+                        <div>
+                            <img
+                                src="{% static 'img/image_5e2339.png' %}"
+                                alt="Logo Dirección de Postgrado"
+                                class="doc-logo"
+                            >
+                        </div>
+
+                        <div class="doc-title-box">
+                            <div class="doc-title" id="viewTitulo">
+                                [TÍTULO DE LA RESOLUCIÓN EN MAYÚSCULAS]
+                            </div>
+
+                            <div class="doc-date-num">
+                                TALCA, <span id="viewFecha">___ de ______ de 2026</span>
+
+                                <div class="doc-number">
+                                    N° <span id="viewNumero">____</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="doc-section">
@@ -172,9 +211,10 @@
                     </div>
                     <div class="doc-footer">
                         <div class="doc-footer-firma">
-                            <p>ANÓTESE Y COMUNIQUESE</p>
+                            <p>ANÓTESE Y COMUNÍQUESE</p>
                             <p>"POR ORDEN DEL SR. RECTOR"</p>
                         </div>
+                        <p class="doc-initials">SWW/</p>
                     </div>
                 </div>
             </div>
