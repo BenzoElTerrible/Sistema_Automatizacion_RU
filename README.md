@@ -21,7 +21,6 @@ La aplicación permite administrar resoluciones, consultar antecedentes históri
 - **Django 5.2:** framework web y capa de acceso a datos.
 - **Django REST Framework 3.15:** construcción de los endpoints de la aplicación.
 - **PostgreSQL 17:** base de datos relacional.
-- **ReportLab:** generación de resoluciones en formato PDF.
 - **python-docx:** generación de resoluciones en formato Word (`.docx`).
 - **psycopg 3.2:** conexión entre Django y PostgreSQL.
 - **python-decouple:** lectura de variables de entorno.
@@ -36,7 +35,7 @@ El sistema está dividido en tres aplicaciones Django:
 | Aplicación | Responsabilidad |
 | --- | --- |
 | `base` | Administra datos maestros, como tipos de programa, tipos de RU, carreras de postgrado y vistos. |
-| `generador` | Construye resoluciones mediante un formulario y genera archivos PDF o Word. |
+| `generador` | Construye resoluciones mediante un formulario y genera archivos Word. |
 | `repositorio` | Gestiona el registro, consulta, actualización, eliminación, integridad y respaldo de las resoluciones. |
 
 Estructura principal:
@@ -145,7 +144,7 @@ docker compose exec web python manage.py test
 2. Las vistas de Django y los endpoints de Django REST Framework validan la solicitud.
 3. Los datos se almacenan en PostgreSQL mediante los modelos de Django.
 4. Los archivos asociados se guardan en el volumen de medios y se verifica su integridad.
-5. El módulo generador utiliza los datos ingresados para producir documentos PDF o Word.
+5. El módulo generador utiliza los datos ingresados para producir documentos en formato Word.
 
 ## Buenas prácticas para colaborar
 
