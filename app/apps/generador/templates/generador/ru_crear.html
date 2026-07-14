@@ -1,0 +1,536 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block active_crear %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .preview-wrapper {
+        background: #e9ecef;
+        padding: 20px;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+    .preview-paper {
+        background: #ffffff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 2.5cm 2.5cm 2.5cm 3cm;
+        margin: 0 auto;
+        color: #000000;
+        font-family: 'Arial', sans-serif;
+        font-size: 11pt;
+        line-height: 1.5;
+    }
+    .doc-header { margin-bottom: 30px; }
+    .doc-title-box { margin-left: 45%; margin-bottom: 20px; }
+    .doc-title { text-transform: uppercase; font-weight: bold; text-align: right; margin-bottom: 15px; }
+    .doc-date-num { text-align: right; text-transform: uppercase; }
+    .doc-section { margin-bottom: 15px; }
+    .doc-section-title { font-weight: bold; margin-bottom: 5px; }
+    .doc-text { text-align: justify; }
+    .doc-text ol { padding-left: 20px; margin-top: 5px; }
+    .doc-text li { margin-bottom: 10px; }
+    .doc-footer { margin-top: 60px; }
+    .doc-footer-firma { text-align: center; font-weight: bold; margin-top: 30px; }
+    .card-form { background: #fff; padding: 25px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h2>Asistente de Creación de Resoluciones</h2>
+            <p class="text-muted">Completa los campos para estructurar el documento, previsualizarlo y descargarlo de inmediato.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-5 col-md-12 mb-4">
+            <div class="card-form">
+                <h4 class="mb-3" style="color: #435d7d;">Datos del Documento</h4>
+                
+                <form id="formAsistenteRU" method="POST" action="{% url 'ru-generar-word' %}" target="_blank">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label>Título de la Resolución / Descripción Corta</label>
+                        <input type="text" id="inputTitulo" name="titulo" class="form-control" placeholder="Ej. Regulariza actividad académica nacional" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Año</label>
+                                <input type="number" id="inputAnio" name="anio" class="form-control" value="2026" min="1950" max="2030" required>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Número RU</label>
+                                <input type="number" id="inputNumero" name="numero_ru" class="form-control" placeholder="22" min="1" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="seccion_origen" value="Postgrado">
+
+                    <div class="form-group">
+                        <label>Tipo de Resolución</label>
+                        <select id="selectTipo" name="tipo" class="form-control" required>
+                            <option value="">Seleccione tipo...</option>
+                            <option value="Ayuda económica">Ayuda económica</option>
+                            <option value="Ingreso de estudiantes">Ingreso de estudiantes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Carrera Asociada</label>
+                        <select id="selectCarrera" name="carrera" class="form-control" required>
+                            <option value="">Seleccione carrera...</option>
+                            {% for c in carreras %}
+                                <option 
+                                    value="{{ c.id }}" 
+                                    data-nombre="{{ c.nombre }}" 
+                                    data-programa-id="{{ c.tipo_programa.id }}">
+                                    {{ c.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Vistos Disponibles</label>
+                        <div id="contenedorCheckboxesVistos" class="border p-3 bg-light" style="max-height: 200px; overflow-y: auto; border-radius: 4px;">
+                            <p class="text-muted small mb-0">Selecciona una carrera para cargar sus vistos normativos.</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">RU históricas asociadas / respaldos</label>
+                            <div id="contenedorRUHistoricas" class="border p-3 bg-light" style="max-height: 220px; overflow-y: auto; border-radius: 4px;">
+                                <p class="text-muted small mb-0">Selecciona una carrera para cargar las RU históricas asociadas.</p>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnDescargarRespaldos">
+                                Descargar respaldos seleccionados
+                            </button>
+                        </div>
+                    </div>
+                        <hr>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Considerandos</label>
+
+                            <div id="contenedorConsiderandosDinamicos"></div>
+                            
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-1" id="btnAddConsiderando">
+                                + Añadir considerando adicional
+                            </button>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <label class="font-weight-bold">Resuelvo</label>
+                            <textarea id="inputResuelvo" name="resuelvo" class="form-control" rows="4" placeholder="1. REGULARÍCESE la actividad..." required></textarea>
+                            <small class="text-muted">Escribe la o las acciones. Puedes incluir los números (1., 2., etc.).</small>
+                        </div>
+                    <button type="submit" class="btn btn-primary btn-block mt-4" style="background-color: #435d7d; border-color: #435d7d;">
+                        <i class="material-icons" style="vertical-align:middle; font-size:18px;">download</i> Descargar Word Oficial
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-7 col-md-12">
+            <h4 class="mb-3" style="color: #435d7d;">Previsualización del Documento</h4>
+            <div class="preview-wrapper">
+                <div class="preview-paper">
+                    <div class="doc-header">
+                        <img src="{% static 'img/image_5e2339.png' %}" alt="Logo Dirección de Postgrado" style="height: 90px; object-fit: contain;">
+                    </div>
+                    <div class="doc-title-box">
+                        <div class="doc-title" id="viewTitulo">[TÍTULO DE LA RESOLUCIÓN EN MAYÚSCULAS]</div>
+                        <div class="doc-date-num">
+                            TALCA, <span id="viewFecha">___ de ______ de 2026</span><br>
+                            N°<span id="viewNumero">____</span>
+                        </div>
+                    </div>
+                    <div class="doc-section">
+                        <div class="doc-section-title">VISTOS:</div>
+                        <div class="doc-text" id="viewVistosCuerpo">
+                            <span class="text-muted italic">[Seleccione los vistos en el formulario para generar el párrafo legal...]</span>
+                        </div>
+                    </div>
+                    <div class="doc-section">
+                        <div class="doc-section-title">CONSIDERANDO:</div>
+                        <div class="doc-text">
+                            <ol type="a" id="viewConsiderandosList"></ol>
+                        </div>
+                    </div>
+                    <div class="doc-section">
+                        <div class="doc-section-title">RESUELVO:</div>
+                        <div class="doc-text" style="white-space: pre-wrap;" id="viewResuelvoCuerpo">
+                            <span class="text-muted italic">[Aquí se detallará la acción resolutiva principal].</span>
+                        </div>
+                    </div>
+                    <div class="doc-footer">
+                        <div class="doc-footer-firma">
+                            <p>ANÓTESE Y COMUNIQUESE</p>
+                            <p>"POR ORDEN DEL SR. RECTOR"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Referencias de elementos del formulario
+    const inputTitulo = document.getElementById('inputTitulo');
+    const inputAnio = document.getElementById('inputAnio');
+    const inputNumero = document.getElementById('inputNumero');
+    const selectTipo = document.getElementById('selectTipo');
+    const selectCarrera = document.getElementById('selectCarrera');
+    const contenedorCheckboxesVistos = document.getElementById('contenedorCheckboxesVistos');
+    const contenedorRUHistoricas = document.getElementById('contenedorRUHistoricas');
+    const inputResuelvo = document.getElementById('inputResuelvo');
+
+    // Referencias para Considerandos (Form y Preview)
+    const viewConsiderandosList = document.getElementById('viewConsiderandosList');
+
+    // Referencias de elementos de la previsualización general
+    const viewTitulo = document.getElementById('viewTitulo');
+    const viewFecha = document.getElementById('viewFecha');
+    const viewNumero = document.getElementById('viewNumero');
+    const viewVistosCuerpo = document.getElementById('viewVistosCuerpo');
+    const viewResuelvoCuerpo = document.getElementById('viewResuelvoCuerpo');
+
+    function reordenarRUHistoricasSeleccionadas() {
+        const seleccionadas = Array.from(document.querySelectorAll('.checkbox-ru-historica:checked'));
+
+        seleccionadas.sort((a, b) => {
+            const ordenA = parseInt(document.querySelector(`.orden-ru-historica[data-id="${a.dataset.id}"]`)?.value || '999');
+            const ordenB = parseInt(document.querySelector(`.orden-ru-historica[data-id="${b.dataset.id}"]`)?.value || '999');
+            return ordenA - ordenB;
+        });
+
+        seleccionadas.forEach((chk, index) => {
+            const inputOrden = document.querySelector(`.orden-ru-historica[data-id="${chk.dataset.id}"]`);
+            if (inputOrden) {
+                inputOrden.value = index + 1;
+            }
+        });
+
+        document.querySelectorAll('.checkbox-ru-historica:not(:checked)').forEach(chk => {
+            const inputOrden = document.querySelector(`.orden-ru-historica[data-id="${chk.dataset.id}"]`);
+            if (inputOrden) {
+                inputOrden.value = '';
+            }
+        });
+    }
+    // 2. Función Global de Previsualización Pulida
+    function actualizarVistaPrevia() {
+        // Título Superior Derecho
+        const tituloMayus = inputTitulo.value.toUpperCase();
+        viewTitulo.textContent = tituloMayus || '[TÍTULO DE LA RESOLUCIÓN EN MAYÚSCULAS]';
+        
+        // Número
+        viewNumero.textContent = inputNumero.value || '____';
+
+        // Sincronizar el nombre de la carrera en los considerandos automáticos (Form y Preview)
+        const optionCarrera = selectCarrera.options[selectCarrera.selectedIndex];
+        const carreraTexto = optionCarrera.getAttribute('data-nombre') || '__________';
+
+        // Fecha dinámica
+        const anio = inputAnio.value || '2026';
+        const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+        const fechaActual = new Date();
+        viewFecha.textContent = `${fechaActual.getDate()} de ${meses[fechaActual.getMonth()]} de ${anio}`;
+        
+        // Resuelvo: Se respetan los saltos de línea para la previsualización
+        if(inputResuelvo.value.trim() !== "") {
+            viewResuelvoCuerpo.innerHTML = inputResuelvo.value.replace(/\n/g, '<br>');
+        } else {
+            viewResuelvoCuerpo.innerHTML = '<span class="text-muted italic">[Aquí se detallará la acción resolutiva principal].</span>';
+        }
+        
+        viewConsiderandosList.innerHTML = '';
+        // Considerandos Dinámicos: Limpiar los anteriores y renderizar los actuales
+        const rusSeleccionadas = Array.from(document.querySelectorAll('.checkbox-ru-historica:checked'));
+
+        rusSeleccionadas.sort((a, b) => {
+            const ordenA = parseInt(document.querySelector(`.orden-ru-historica[data-id="${a.dataset.id}"]`)?.value || '999');
+            const ordenB = parseInt(document.querySelector(`.orden-ru-historica[data-id="${b.dataset.id}"]`)?.value || '999');
+
+            return ordenA - ordenB;
+        });
+
+        rusSeleccionadas.forEach(chk => {
+            const li = document.createElement('li');
+            li.className = 'dinamico-li';
+            li.textContent = chk.getAttribute('data-considerando');
+            viewConsiderandosList.appendChild(li);
+        });
+        const inputsConsiderandos = document.querySelectorAll('.input-considerando');
+        
+        inputsConsiderandos.forEach(input => {
+            if (input.value.trim() !== '') {
+                const li = document.createElement('li');
+                li.className = 'dinamico-li'; // Marcador para borrarlos al actualizar
+                li.textContent = input.value;
+                viewConsiderandosList.appendChild(li);
+            }
+        });
+
+        // Refrescar el párrafo de Vistos
+        actualizarVistosEnPreview();
+    }
+
+    // 3. Lógica para leer los checkboxes de vistos activos y listarlos en la hoja
+    function actualizarVistosEnPreview() {
+        const checkboxesActivos = document.querySelectorAll('.checkbox-visto-dinamico:checked');
+        if (checkboxesActivos.length === 0) {
+            viewVistosCuerpo.innerHTML = '<span class="text-muted italic">[Seleccione los vistos en el formulario para generar el párrafo legal...]</span>';
+            return;
+        }
+
+        let textosVistos = [];
+        checkboxesActivos.forEach((chk) => {
+            textosVistos.push(chk.getAttribute('data-texto').trim());
+        });
+
+        // En formato formal, los vistos van en un solo párrafo separados por ";"
+        viewVistosCuerpo.innerHTML = textosVistos.join('; ') + '.';
+    }
+
+    // 4. Lógica para Cargar Vistos por API según Carrera seleccionada
+    selectCarrera.addEventListener('change', function() {
+        generarEpigrafePorDefecto();
+
+        const optionSeleccionada = this.options[this.selectedIndex];
+        const programaId = optionSeleccionada.getAttribute('data-programa-id');
+        const carreraId = this.value;
+        if (!programaId) {
+            contenedorCheckboxesVistos.innerHTML = '<p class="text-muted small mb-0">Selecciona una carrera para cargar sus vistos normativos.</p>';
+            actualizarVistosEnPreview();
+            return;
+        }
+
+        contenedorCheckboxesVistos.innerHTML = '<p class="text-muted small mb-0">Cargando vistos normativos...</p>';
+
+        fetch(`/vistos/?tipo_programa=${programaId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    contenedorCheckboxesVistos.innerHTML = '<p class="text-danger small mb-0">No hay vistos configurados para el tipo de programa de esta carrera.</p>';
+                    actualizarVistosEnPreview();
+                    cargarRUHistoricas(carreraId);
+                    return;
+                }
+
+                let htmlCheckboxes = '';
+
+                data.forEach(visto => {
+                    htmlCheckboxes += `
+                        <div class="custom-control custom-checkbox mb-2">
+                            <input 
+                                type="checkbox" 
+                                name="vistos_textos" 
+                                value="${visto.texto.replace(/"/g, '&quot;')}" 
+                                class="custom-control-input checkbox-visto-dinamico" 
+                                id="chk_visto_${visto.id}" 
+                                data-texto="${visto.texto.replace(/"/g, '&quot;')}">
+
+                            <label class="custom-control-label small text-justify" for="chk_visto_${visto.id}">
+                                ${visto.texto}
+                            </label>
+                        </div>
+                    `;
+                });
+
+                contenedorCheckboxesVistos.innerHTML = htmlCheckboxes;
+
+                document.querySelectorAll('.checkbox-visto-dinamico').forEach(chk => {
+                    chk.addEventListener('change', actualizarVistosEnPreview);
+                });
+
+                actualizarVistosEnPreview();
+                cargarRUHistoricas(carreraId);
+            })
+            .catch(err => {
+                console.error("Error al obtener vistos:", err);
+                contenedorCheckboxesVistos.innerHTML = '<p class="text-danger small mb-0">Error de conexión al cargar vistos.</p>';
+            });
+    });
+
+    function cargarRUHistoricas(carreraId) {
+        if (!carreraId) {
+            contenedorRUHistoricas.innerHTML = '<p class="text-muted small mb-0">Selecciona una carrera para cargar las RU históricas asociadas.</p>';
+            return;
+        }
+
+        contenedorRUHistoricas.innerHTML = '<p class="text-muted small mb-0">Cargando RU históricas...</p>';
+
+        fetch(`/ru-historicas/carrera/${carreraId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    contenedorRUHistoricas.innerHTML = '<p class="text-danger small mb-0">No hay RU históricas asociadas a esta carrera.</p>';
+                    return;
+                }
+
+                let html = '';
+
+                data.forEach(ru => {
+                    html += `
+                        <div class="d-flex align-items-start mb-2">
+                            <input 
+                                type="number"
+                                class="form-control form-control-sm mr-2 orden-ru-historica"
+                                style="width: 75px;"
+                                min="1"
+                                placeholder="Orden"
+                                data-id="${ru.id}">
+
+                            <div class="custom-control custom-checkbox flex-grow-1">
+                                <input 
+                                    type="checkbox" 
+                                    name="considerandos" 
+                                    value="${ru.considerando.replace(/"/g, '&quot;')}"
+                                    class="custom-control-input checkbox-ru-historica" 
+                                    id="ru_hist_${ru.id}" 
+                                    data-id="${ru.id}"
+                                    data-considerando="${ru.considerando.replace(/"/g, '&quot;')}">
+
+                                <label class="custom-control-label small text-justify" for="ru_hist_${ru.id}">
+                                    R.U. N° ${ru.numero_ru} - ${ru.fecha} - ${ru.tipo}
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                contenedorRUHistoricas.innerHTML = html;
+
+                document.querySelectorAll('.checkbox-ru-historica').forEach(chk => {
+                    chk.addEventListener('change', function() {
+                        reordenarRUHistoricasSeleccionadas();
+                        actualizarVistaPrevia();
+                    });
+                });
+
+                document.querySelectorAll('.orden-ru-historica').forEach(input => {
+                    input.addEventListener('input', actualizarVistaPrevia);
+                });
+
+                actualizarVistaPrevia();
+            })
+            .catch(err => {
+                console.error("Error al obtener RU históricas:", err);
+                contenedorRUHistoricas.innerHTML = '<p class="text-danger small mb-0">Error al cargar RU históricas.</p>';
+            });
+    }
+    // 5. Lógica para agregar nuevos considerandos dinámicamente (Iniciando en la letra 'c')
+    document.getElementById('btnAddConsiderando').addEventListener('click', function() {
+        const contenedor = document.getElementById('contenedorConsiderandosDinamicos');
+        const items = document.querySelectorAll('.considerando-item');
+        
+        // 97 es la 'a' en código ASCII. Sumamos 2 para saltar 'a' y 'b'. Empieza en 'c' (99).
+        const nextLetter = String.fromCharCode(97 + 2 + items.length); 
+
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2 considerando-item';
+        div.innerHTML = `
+            <div class="input-group-prepend"><span class="input-group-text">${nextLetter})</span></div>
+            <textarea name="considerandos" class="form-control input-considerando" rows="2" required></textarea>
+            <div class="input-group-append">
+                <button class="btn btn-outline-danger btn-remove-considerando" type="button" title="Eliminar">
+                    <i class="material-icons" style="font-size:18px; line-height: 1;">delete</i>
+                </button>
+            </div>
+        `;
+        contenedor.appendChild(div);
+
+        // Enganchar el evento de input al nuevo textarea para el tiempo real
+        div.querySelector('.input-considerando').addEventListener('input', actualizarVistaPrevia);
+        
+        // Botón de eliminar
+        div.querySelector('.btn-remove-considerando').addEventListener('click', function() {
+            div.remove();
+            reindexarConsiderandos();
+            actualizarVistaPrevia();
+        });
+    });
+
+    // Reordena las letras (c, d, e...) si eliminas un considerando del medio
+    function reindexarConsiderandos() {
+        const items = document.querySelectorAll('.considerando-item');
+        items.forEach((item, index) => {
+            const letter = String.fromCharCode(97 + 2 + index); // Siempre empieza en 'c'
+            item.querySelector('.input-group-text').textContent = letter + ')';
+        });
+    }
+
+    // Llamada inicial por si el navegador recarga con datos en memoria
+    actualizarVistaPrevia();
+
+    function generarEpigrafePorDefecto() {
+        const tipo = selectTipo.value;
+        const anio = inputAnio.value || '2026';
+
+        const optionCarrera = selectCarrera.options[selectCarrera.selectedIndex];
+        const carreraTexto = optionCarrera?.getAttribute('data-nombre') || '[PROGRAMA]';
+
+        if (tipo === 'Ayuda económica') {
+            inputTitulo.value = `REGULARIZA ACTIVIDAD ACADÉMICA NACIONAL Y OTORGA AYUDA ECONÓMICA A ESTUDIANTE DEL PROGRAMA DE ${carreraTexto}, QUE SE INDICA.`;
+        }
+
+        if (tipo === 'Ingreso de estudiantes') {
+            inputTitulo.value = `REGULARIZA INGRESO DE ESTUDIANTES AL PROGRAMA DE ${carreraTexto}, PARA EL AÑO ${anio}.`;
+        }
+
+        actualizarVistaPrevia();
+    }
+
+    // 6. Escuchar eventos básicos
+    inputTitulo.addEventListener('input', actualizarVistaPrevia);
+    inputNumero.addEventListener('input', actualizarVistaPrevia);
+    inputResuelvo.addEventListener('input', actualizarVistaPrevia);
+
+    selectTipo.addEventListener('change', generarEpigrafePorDefecto);
+    inputAnio.addEventListener('input', generarEpigrafePorDefecto);
+
+    document.getElementById('btnDescargarRespaldos').addEventListener('click', function() {
+        const seleccionadas = Array.from(document.querySelectorAll('.checkbox-ru-historica:checked'));
+
+        if (seleccionadas.length === 0) {
+            alert('Selecciona al menos una RU histórica para descargar sus respaldos.');
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/ru/respaldos/zip/';
+        form.target = '_blank';
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        form.appendChild(csrfInput);
+
+        seleccionadas.forEach(chk => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ru_ids';
+            input.value = chk.dataset.id;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+    });
+    actualizarVistaPrevia();
+</script>
+{% endblock %}

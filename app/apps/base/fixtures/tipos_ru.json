@@ -1,0 +1,8 @@
+[
+  {"model": "base.tiporu", "pk": 1, "fields": {"nombre": "Nombramiento de Director", "sigla": "ND"}},
+  {"model": "base.tiporu", "pk": 2, "fields": {"nombre": "Nombramiento de Comité Académico", "sigla": "NCA"}},
+  {"model": "base.tiporu", "pk": 3, "fields": {"nombre": "Creación de Programa", "sigla": "CP"}},
+  {"model": "base.tiporu", "pk": 4, "fields": {"nombre": "Modificación de Programa", "sigla": "MP"}},
+  {"model": "base.tiporu", "pk": 5, "fields": {"nombre": "Ingreso de Estudiantes", "sigla": "IE"}},
+  {"model": "base.tiporu", "pk": 6, "fields": {"nombre": "Otro", "sigla": "OTRO"}}
+]

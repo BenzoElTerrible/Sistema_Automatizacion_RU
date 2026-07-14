@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sistema RU - Postgrado</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar-top">
+    <a href="/resoluciones/gestion/" class="brand">
+        <i class="material-icons" style="vertical-align:middle; font-size:20px;">school</i>
+        RU-Postgrado
+    </a>
+    <button class="btn-ayuda" data-toggle="modal" data-target="#ayudaModal">
+        <i class="material-icons" style="vertical-align:middle; font-size:15px;">help_outline</i>
+        Ayuda
+    </button>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <a href="/resoluciones/gestion/" class="{% block active_gestion %}{% endblock %}">
+            <i class="material-icons">folder</i> Gestión RU
+        </a>
+        <a href="/resoluciones/crear/" class="{% block active_crear %}{% endblock %}">
+            <i class="material-icons">note_add</i> Crear RU
+        </a>
+        <a href="/resoluciones/vistos/" class="{% block active_vistos %}{% endblock %}">
+            <i class="material-icons">visibility</i> Ver Vistos
+        </a>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+</div>
+
+<!-- Modal Ayuda -->
+<div id="ayudaModal" class="modal fade">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#435d7d; color:white;">
+                <h4 class="modal-title">Manual de uso - Sistema de Resoluciones Universitarias</h4>
+                <button type="button" class="close" data-dismiss="modal" style="color:white;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h5><i class="material-icons" style="vertical-align:middle;">folder</i> Gestión RU</h5>
+                <p>
+                    <strong>¿Qué es?</strong> Es el repositorio central de resoluciones universitarias ya existentes. 
+                    Aquí puedes <strong>subir</strong> nuevas resoluciones (en formato PDF) que ya han sido emitidas, 
+                    <strong>visualizar</strong> su información, <strong>editar</strong> sus metadatos y 
+                    <strong>eliminar</strong> resoluciones que ya no estén vigentes.
+                </p>
+                <p>
+                    <strong>¿Qué espera el sistema de ti?</strong> Que mantengas actualizado el inventario de resoluciones. 
+                    Al subir una RU, debes completar todos los campos (año, número, sección, tipo, carrera) y adjuntar el PDF. 
+                    El sistema generará automáticamente un nombre estandarizado para facilitar su búsqueda.
+                </p>
+                <p>
+                    <strong>Ícono de ojo 👁️:</strong> Al hacer clic en el ojo junto a una resolución, podrás ver los 
+                    <strong>vistos</strong> (textos normativos) que están asociados al tipo de programa de su carrera. 
+                    Esto te ayuda a conocer qué antecedentes podrías usar al crear una nueva resolución similar.
+                </p>
+                <hr>
+
+                <h5><i class="material-icons" style="vertical-align:middle;">note_add</i> Crear RU</h5>
+                <p>
+                    <strong>¿Qué es?</strong> (Próximamente) Este módulo te permitirá <strong>generar una nueva resolución desde cero</strong> 
+                    de forma asistida. No se trata de subir un PDF ya existente, sino de construir el documento automáticamente.
+                </p>
+                <p>
+                    <strong>¿Cómo funcionará?</strong> Seleccionarás el tipo de resolución, la carrera y otros datos. 
+                    El sistema tomará los <strong>vistos</strong> predefinidos que correspondan al tipo de programa de la carrera 
+                    y los incorporará automáticamente en el documento, junto con la estructura estándar (epígrafe, considerandos, resuelvo). 
+                    Luego, con ReportLab, generará un PDF listo para descargar y firmar.
+                </p>
+                <hr>
+
+                <h5><i class="material-icons" style="vertical-align:middle;">visibility</i> Ver Vistos</h5>
+                <p>
+                    <strong>¿Qué es?</strong> Es un <strong>panel de administración de vistos</strong>, donde puedes gestionar 
+                    los textos normativos que se utilizan como antecedentes en las resoluciones universitarias.
+                </p>
+                <p>
+                    <strong>¿Qué puedes hacer aquí?</strong>
+                    <ul>
+                        <li><strong>Listar</strong> todos los vistos existentes, organizados por tipo de programa (Doctorado, Magíster, Especialización).</li>
+                        <li><strong>Crear</strong> nuevos vistos para un tipo de programa específico.</li>
+                        <li><strong>Editar</strong> el texto de cualquier visto (por ejemplo, si cambia una normativa).</li>
+                        <li><strong>Eliminar</strong> vistos que ya no se utilicen.</li>
+                    </ul>
+                </p>
+                <p>
+                    <strong>¿Por qué es importante?</strong> Los vistos son fragmentos de texto reutilizables que se incluyen en las resoluciones, 
+                    como "Visto: la Resolución N° X del año Y..." Al mantenerlos actualizados aquí, cuando crees una nueva RU en el módulo 
+                    "Crear RU", el sistema los tomará automáticamente sin que tengas que escribirlos cada vez.
+                </p>
+                <p>
+                    <strong>Nota:</strong> Los vistos <strong>no</strong> son resoluciones completas, sino solo textos de antecedentes. 
+                    Por eso se gestionan de forma separada.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

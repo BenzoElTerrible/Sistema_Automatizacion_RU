@@ -1,0 +1,5 @@
+[
+  {"model": "base.tipoprograma", "pk": 1, "fields": {"nombre": "Doctorado"}},
+  {"model": "base.tipoprograma", "pk": 2, "fields": {"nombre": "Magíster"}},
+  {"model": "base.tipoprograma", "pk": 3, "fields": {"nombre": "Especialización"}}
+]

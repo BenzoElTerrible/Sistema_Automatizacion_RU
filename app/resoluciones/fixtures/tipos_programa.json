@@ -1,5 +1,0 @@
-[
-  {"model": "resoluciones.tipoprograma", "pk": 1, "fields": {"nombre": "Doctorado"}},
-  {"model": "resoluciones.tipoprograma", "pk": 2, "fields": {"nombre": "Magíster"}},
-  {"model": "resoluciones.tipoprograma", "pk": 3, "fields": {"nombre": "Especialización"}}
-]
