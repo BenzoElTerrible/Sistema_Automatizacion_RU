@@ -1,0 +1,10 @@
+# Configuracion de Django
+SECRET_KEY=reemplazar-por-una-clave-secreta-larga-y-aleatoria
+DEBUG=True
+
+# PostgreSQL (valores compatibles con docker-compose.yml)
+DB_NAME=ru_manager
+DB_USER=ru_user
+DB_PASSWORD=ru_password
+DB_HOST=db
+DB_PORT=5432
